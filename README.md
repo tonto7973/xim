@@ -22,12 +22,12 @@ Xim supports secure connections using SSL certificate.
 
 ## Quick Start
 
-* [Http Api](./docs/quick_start_http_api)
-* [Service Bus](./docs/quick_start_service_bus)
+* [Http Api](./docs/quick_start_http_api.md)
+* [Service Bus](./docs/quick_start_service_bus.md)
 
 ## Documentation
 
-* [Wiki](./wiki)
+* [Wiki](https://github.com/tonto7973/xim/wiki)
 
 ## Examples
 
