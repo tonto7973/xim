@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureBlobStorage", "AzureBlobStorage\AzureBlobStorage.csproj", "{E91406FC-3C9F-4852-99D9-841A8ADA2431}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureServiceBus", "AzureServiceBus\AzureServiceBus.csproj", "{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Signed|Any CPU = Signed|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E91406FC-3C9F-4852-99D9-841A8ADA2431}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E91406FC-3C9F-4852-99D9-841A8ADA2431}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E91406FC-3C9F-4852-99D9-841A8ADA2431}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E91406FC-3C9F-4852-99D9-841A8ADA2431}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E91406FC-3C9F-4852-99D9-841A8ADA2431}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{E91406FC-3C9F-4852-99D9-841A8ADA2431}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}.Signed|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AFF4A9F-70A2-4D2D-A94A-8FCBA0650F33}.Signed|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {722306BB-7932-4358-8BAC-D9F6AC957F02}
+	EndGlobalSection
+EndGlobal
