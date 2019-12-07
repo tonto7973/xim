@@ -107,13 +107,16 @@ namespace Xim.Simulators.ServiceBus
             }
         }
 
-        public override async Task StopAsync()
+        public override Task StopAsync()
+            => Task.Run(Abort);
+
+        public override void Abort()
         {
             if (TrySetState(SimulatorState.Stopping))
             {
                 try
                 {
-                    await Task.Run(StopHost).ConfigureAwait(false);
+                    StopHost();
                 }
                 finally
                 {
@@ -215,6 +218,8 @@ namespace Xim.Simulators.ServiceBus
             if (_disposed)
                 return;
             _disposed = true;
+
+            Abort();
 
             foreach (var topic in Topics.Values.OfType<TopicEntity>())
             {

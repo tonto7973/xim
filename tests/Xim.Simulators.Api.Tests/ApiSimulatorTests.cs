@@ -144,6 +144,18 @@ namespace Xim.Simulators.Api.Tests
         }
 
         [Test]
+        public async Task Dispose_SetsStateToStopped()
+        {
+            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
+            var apiSimulator = new ApiSimulator(apiBuilder);
+            await apiSimulator.StartAsync();
+
+            apiSimulator.Dispose();
+
+            apiSimulator.State.ShouldBe(SimulatorState.Stopped);
+        }
+
+        [Test]
         public async Task StartAsync_SetsStateToRunning()
         {
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
@@ -189,24 +201,6 @@ namespace Xim.Simulators.Api.Tests
             finally
             {
                 listener.Stop();
-            }
-        }
-
-        [Test]
-        public async Task StopAsync_SetsStateToStopped()
-        {
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
-            var apiSimulator = new ApiSimulator(apiBuilder);
-
-            await apiSimulator.StartAsync();
-            try
-            {
-                await apiSimulator.StopAsync();
-                apiSimulator.State.ShouldBe(SimulatorState.Stopped);
-            }
-            finally
-            {
-                await apiSimulator.StopAsync();
             }
         }
 
@@ -274,6 +268,61 @@ namespace Xim.Simulators.Api.Tests
                 await Task.Delay(150);
                 await apiSimulator.StopAsync();
                 await apiSimulator.StopAsync();
+            }
+            finally
+            {
+                await apiSimulator.StopAsync();
+            }
+        }
+
+        [Test]
+        public async Task StopAsync_SetsStateToStopped()
+        {
+            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
+            var apiSimulator = new ApiSimulator(apiBuilder);
+
+            await apiSimulator.StartAsync();
+            try
+            {
+                await apiSimulator.StopAsync();
+                apiSimulator.State.ShouldBe(SimulatorState.Stopped);
+            }
+            finally
+            {
+                await apiSimulator.StopAsync();
+            }
+        }
+
+        [Test]
+        public async Task Abort_DoesNotThrow_WhenCalledMultipleTimes()
+        {
+            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
+            var apiSimulator = new ApiSimulator(apiBuilder);
+
+            await apiSimulator.StartAsync();
+            try
+            {
+                await Task.Delay(150);
+                apiSimulator.Abort();
+                apiSimulator.Abort();
+            }
+            finally
+            {
+                await apiSimulator.StopAsync();
+            }
+        }
+
+        [Test]
+        public async Task Abort_SetsStateToStopped()
+        {
+            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
+            var apiSimulator = new ApiSimulator(apiBuilder);
+
+            await apiSimulator.StartAsync();
+            try
+            {
+                apiSimulator.Abort();
+                apiSimulator.State.ShouldBe(SimulatorState.Stopped);
             }
             finally
             {
