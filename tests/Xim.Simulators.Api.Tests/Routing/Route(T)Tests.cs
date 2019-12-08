@@ -15,7 +15,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         [Test]
         public void Constructor_Throws_WhenActionNull()
         {
-            Action action = () => new Route<int>(null, (_, __) => null);
+            Action action = () => new Route<int>(null, (_, __) => null, null);
             action.ShouldThrow<ArgumentNullException>()
                 .ParamName.ShouldBe("action");
         }
@@ -23,7 +23,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         [Test]
         public void Constructor_Throws_WhenHandlerNull()
         {
-            Action action = () => new Route<int>("GET /", null);
+            Action action = () => new Route<int>("GET /", null, null);
             action.ShouldThrow<ArgumentNullException>()
                 .ParamName.ShouldBe("handler");
         }
@@ -32,7 +32,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Constructor_Throws_WhenNoTemplate()
         {
             ApiHandler<int> handler = (id, _) => Task.FromResult(ApiResponse.Ok(id));
-            Action action = () => new Route<int>("POST /names/32", handler);
+            Action action = () => new Route<int>("POST /names/32", handler, null);
             action.ShouldThrow<ArgumentException>()
                 .Message.ShouldBe(SR.Format(SR.ApiHandlerTemplateNoParameters));
         }
@@ -41,7 +41,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Constructor_Throws_WhenTemplateDoesNotMatchTupleParameters()
         {
             ApiHandler<(int, bool)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            Action action = () => new Route<(int, bool)>("POST /names/{id}", handler);
+            Action action = () => new Route<(int, bool)>("POST /names/{id}", handler, null);
             action.ShouldThrow<ArgumentException>()
                 .Message.ShouldBe(SR.Format(SR.ApiHanderTemplateInvalid, "POST /names/{id}", "(Int32,Boolean)"));
         }
@@ -50,7 +50,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Constructor_Throws_WhenTemplateDoesNotMatchPrimitiveParameters()
         {
             ApiHandler<int> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            Action action = () => new Route<int>("POST /names/{id}/{age}", handler);
+            Action action = () => new Route<int>("POST /names/{id}/{age}", handler, null);
             action.ShouldThrow<ArgumentException>()
                 .Message.ShouldBe(SR.Format(SR.ApiHanderTemplateInvalid, "POST /names/{id}/{age}", "Int32"));
         }
@@ -59,7 +59,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Constructor_SetsCorrectAction()
         {
             ApiHandler<int> handler = (id, _) => Task.FromResult(ApiResponse.Ok(id));
-            var route = new Route<int>("POST /names/{id}", handler);
+            var route = new Route<int>("POST /names/{id}", handler, null);
             route.Action.ShouldBe("POST /names/{id}");
         }
 
@@ -67,7 +67,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_ReturnsFull_WhenTemplateCanBeUsedForPrimitiveAndNoQueryUsed()
         {
             ApiHandler<int> handler = (id, _) => Task.FromResult(ApiResponse.Ok(id));
-            var route = new Route<int>("GET /names/{id}", handler);
+            var route = new Route<int>("GET /names/{id}", handler, null);
             route.Match("GET /names/32").ShouldBe(RouteOrder.Action);
         }
 
@@ -76,7 +76,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_ReturnsNone_WhenMethodOrPathNotSame(string action)
         {
             ApiHandler<int> handler = (id, _) => Task.FromResult(ApiResponse.Ok(id));
-            var route = new Route<int>("GET /names/{id}", handler);
+            var route = new Route<int>("GET /names/{id}", handler, null);
             route.Match(action).ShouldBe(RouteOrder.None);
         }
 
@@ -85,7 +85,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_ReturnsAction_WhenTemplateCanBeUsedForPrimitiveAndQueryTheSame(string action)
         {
             ApiHandler<double> handler = (age, _) => Task.FromResult(ApiResponse.Ok(age));
-            var route = new Route<double>("GET /names/{age}?filter=abc&a=b", handler);
+            var route = new Route<double>("GET /names/{age}?filter=abc&a=b", handler, null);
             route.Match(action).ShouldBe(RouteOrder.Action);
         }
 
@@ -93,7 +93,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_ReturnsNoQuery_WhenTemplateCanBeUsedForPrimitiveAndOnlyPathMatches()
         {
             ApiHandler<int> handler = (id, _) => Task.FromResult(ApiResponse.Ok(id));
-            var route = new Route<int>("GET /names/{id}", handler);
+            var route = new Route<int>("GET /names/{id}", handler, null);
             route.Match("GET /names/32?full=false").ShouldBe(RouteOrder.ActionNoQuery);
             route.Match("GET /names/true?full=false").ShouldBe(RouteOrder.RouteNoQuery);
         }
@@ -102,7 +102,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_ReturnsAction_WhenTemplateCanBeUsedForTupleAndNoQueryUsed()
         {
             ApiHandler<(int Id, bool IsLong)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value.IsLong));
-            var route = new Route<(int, bool)>("GET /names/{id}/type/{long}", handler);
+            var route = new Route<(int, bool)>("GET /names/{id}/type/{long}", handler, null);
             route.Match("GET /names/777/type/true").ShouldBe(RouteOrder.Action);
             route.Match("GET /names/1/type/false").ShouldBe(RouteOrder.Action);
             route.Match("GET /names/1/type/burda").ShouldBe(RouteOrder.Route);
@@ -112,7 +112,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_ReturnsFull_WhenTemplateWithDateUsed()
         {
             ApiHandler<(TestColor Color, DateTime Date, bool valid)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value.Date));
-            var route = new Route<(TestColor, DateTime, bool)>("GET /names/{color}/type/{date}/{valid}", handler);
+            var route = new Route<(TestColor, DateTime, bool)>("GET /names/{color}/type/{date}/{valid}", handler, null);
             route.Match("GET /names/blue/type/2012-01-01/True").ShouldBe(RouteOrder.Action);
             route.Match("GET /names/Green/type/2012-01-01T12:32:04/true").ShouldBe(RouteOrder.Action);
         }
@@ -121,7 +121,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void Match_DoesNotBreak_WhenRegexUsedInsideRoute()
         {
             ApiHandler<int> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            var route = new Route<int>("GET /{id}/([a-z]+)", handler);
+            var route = new Route<int>("GET /{id}/([a-z]+)", handler, null);
 
             route.Match("GET /32/true").ShouldBe(RouteOrder.None);
         }
@@ -133,7 +133,7 @@ namespace Xim.Simulators.Api.Routing.Tests
             context.Request.Method = "GET";
             context.Request.Path = "/names/green/type/2012-01-01T12:32:04/true/-/15:32:08";
             ApiHandler<(TestColor Color, DateTime Date, bool Valid, TimeSpan Time)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            var route = new Route<(TestColor, DateTime, bool, TimeSpan)>("GET /names/{color}/type/{date}/{valid}/-/{time}", handler);
+            var route = new Route<(TestColor, DateTime, bool, TimeSpan)>("GET /names/{color}/type/{date}/{valid}/-/{time}", handler, null);
 
             var response = await route.Handler(context);
             var body = response.Body as Body<(TestColor Color, DateTime Date, bool Valid, TimeSpan Time)>;
@@ -151,7 +151,7 @@ namespace Xim.Simulators.Api.Routing.Tests
             context.Request.Method = "PUT";
             context.Request.Path = "/animals/SNAKE/color/Indigo/15.4";
             ApiHandler<(string Type, TestColor Color, DateTime Date)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            var route = new Route<(string, TestColor, DateTime)>("PUT /animals/{type}/color/{color}/{date}", handler);
+            var route = new Route<(string, TestColor, DateTime)>("PUT /animals/{type}/color/{color}/{date}", handler, null);
 
             var response = await route.Handler(context);
 
@@ -170,7 +170,7 @@ namespace Xim.Simulators.Api.Routing.Tests
             context.Request.Method = "POST";
             context.Request.Path = "/animals/32/fur";
             ApiHandler<(int Age, TestColor Color)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            var route = new Route<(int, TestColor)>("POST /animals/{age}/fur/{fur}", handler);
+            var route = new Route<(int, TestColor)>("POST /animals/{age}/fur/{fur}", handler, null);
 
             var response = await route.Handler(context);
 
@@ -187,7 +187,7 @@ namespace Xim.Simulators.Api.Routing.Tests
             context.Request.Method = "GET";
             context.Request.Path = "/animalsies/528";
             ApiHandler<int> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
-            var route = new Route<int>("GET /animals/{age}", handler);
+            var route = new Route<int>("GET /animals/{age}", handler, null);
 
             var response = await route.Handler(context);
 
