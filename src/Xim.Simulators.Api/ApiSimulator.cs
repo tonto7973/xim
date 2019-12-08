@@ -111,13 +111,16 @@ namespace Xim.Simulators.Api
             }
         }
 
-        public override async Task StopAsync()
+        public override Task StopAsync()
+            => StopAsync(TimeSpan.FromSeconds(5));
+
+        private async Task StopAsync(TimeSpan timeout)
         {
             if (TrySetState(SimulatorState.Stopping))
             {
                 try
                 {
-                    await _webHost.StopAsync().ConfigureAwait(false);
+                    await _webHost.StopAsync(timeout).ConfigureAwait(false);
                     await _webHost.WaitForShutdownAsync().ConfigureAwait(false);
                 }
                 finally
@@ -129,11 +132,17 @@ namespace Xim.Simulators.Api
             }
         }
 
+        public override void Abort()
+            => StopAsync(TimeSpan.FromMilliseconds(1))
+                .GetAwaiter()
+                .GetResult();
+
         public void Dispose()
         {
             if (_disposed)
                 return;
 
+            Abort();
             _webHost?.Dispose();
 
             _disposed = true;

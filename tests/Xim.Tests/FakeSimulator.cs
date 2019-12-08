@@ -10,5 +10,7 @@ namespace Xim.Tests
         public Task StartAsync() => Task.CompletedTask;
 
         public Task StopAsync() => Task.CompletedTask;
+
+        public void Abort() { }
     }
 }

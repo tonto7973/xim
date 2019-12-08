@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,6 +17,46 @@ namespace Xim.Simulators.Api.Tests
     [TestFixture]
     public class XimApiSimulatorSmokeTests
     {
+        [Test]
+        public async Task TestAbortSimpleHttpApiSimulator()
+        {
+            using (var simulation = Simulation.Create())
+            {
+                var someApi = simulation
+                    .AddApi()
+                    .SetDefaultHandler(async _ =>
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(6));
+                        return ApiResponse.NotFound();
+                    })
+                    .Build();
+
+                await someApi.StartAsync();
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        var sendTask = client.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"{someApi.Location}/books/8794"));
+                        await Task.Delay(150);
+                        var sw = new Stopwatch();
+                        sw.Start();
+                        someApi.Abort();
+                        sw.Stop();
+                        var exception = await sendTask.ContinueWith(t => t.Exception, TaskContinuationOptions.OnlyOnFaulted);
+
+                        someApi.ShouldSatisfyAllConditions(
+                            () => exception.ShouldNotBeNull(),
+                            () => sw.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(2))
+                        );
+                    }
+                }
+                finally
+                {
+                    await someApi.StopAsync();
+                }
+            }
+        }
+
         [Test]
         public async Task TestSimpleHttpApiSimulator()
         {

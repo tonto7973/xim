@@ -118,6 +118,18 @@ namespace Xim.Simulators.ServiceBus.Tests
         }
 
         [Test]
+        public async Task Dispose_SetsStateToStopped()
+        {
+            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
+            var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
+            await serviceBusSimulator.StartAsync();
+
+            serviceBusSimulator.Dispose();
+
+            serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
+        }
+
+        [Test]
         public async Task StartAsync_SetsStateToRunning()
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
@@ -127,24 +139,6 @@ namespace Xim.Simulators.ServiceBus.Tests
             try
             {
                 serviceBusSimulator.State.ShouldBe(SimulatorState.Running);
-            }
-            finally
-            {
-                await serviceBusSimulator.StopAsync();
-            }
-        }
-
-        [Test]
-        public async Task StopAsync_SetsStateToStopped()
-        {
-            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
-            var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
-
-            await serviceBusSimulator.StartAsync();
-            try
-            {
-                await serviceBusSimulator.StopAsync();
-                serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
             }
             finally
             {
@@ -334,6 +328,42 @@ namespace Xim.Simulators.ServiceBus.Tests
             try
             {
                 await action.ShouldThrowAsync<UriFormatException>();
+                serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
+            }
+            finally
+            {
+                await serviceBusSimulator.StopAsync();
+            }
+        }
+
+        [Test]
+        public async Task StopAsync_SetsStateToStopped()
+        {
+            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
+            var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
+
+            await serviceBusSimulator.StartAsync();
+            try
+            {
+                await serviceBusSimulator.StopAsync();
+                serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
+            }
+            finally
+            {
+                await serviceBusSimulator.StopAsync();
+            }
+        }
+
+        [Test]
+        public async Task Abort_SetsStateToStopped()
+        {
+            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
+            var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
+
+            await serviceBusSimulator.StartAsync();
+            try
+            {
+                serviceBusSimulator.Abort();
                 serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
             }
             finally

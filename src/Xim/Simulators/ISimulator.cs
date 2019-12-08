@@ -19,9 +19,14 @@ namespace Xim.Simulators
         Task StartAsync();
 
         /// <summary>
-        /// Stops the simulator.
+        /// Gracefully stops the simulator.
         /// </summary>
         /// <returns>A task that represents the asynchronous stop operation.</returns>
         Task StopAsync();
+
+        /// <summary>
+        /// Aborts the simulator.
+        /// </summary>
+        void Abort();
     }
 }
