@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -15,15 +16,18 @@ namespace Xim.Simulators.Api.Routing
 
         public readonly string Action;
         public readonly ApiHandler Handler;
+        public readonly Route Previous;
+        public bool Invoked;
 
-        protected Route(string action, Func<Route, ApiHandler> handlerFactory)
+        protected Route(string action, Func<Route, ApiHandler> handlerFactory, Route previous)
         {
             Action = Normalize(action, out Method, out Uri);
             Handler = handlerFactory(this);
+            Previous = previous;
         }
 
-        public Route(string action, ApiHandler handler)
-            : this(action, _ => handler)
+        public Route(string action, ApiHandler handler, Route previous)
+            : this(action, _ => handler, previous)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -91,6 +95,16 @@ namespace Xim.Simulators.Api.Routing
             uri = uriBuilder.Uri;
 
             return method + " " + uriBuilder.Uri.LocalPath + uriBuilder.Query;
+        }
+
+        internal IEnumerable<Route> AsEnumerable()
+        {
+            var current = this;
+            do
+            {
+                yield return current;
+                current = current.Previous;
+            } while (current != null);
         }
     }
 }

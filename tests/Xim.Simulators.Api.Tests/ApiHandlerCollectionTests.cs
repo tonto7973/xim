@@ -241,5 +241,39 @@ namespace Xim.Simulators.Api.Tests
             apiHandlers.Set<int>("GET /x/{id}", (_, __) => Task.FromResult(new ApiResponse(201)));
             apiHandlers["GET /x/33"](httpContext).Result.StatusCode.ShouldBe(201);
         }
+
+        [Test]
+        public void Next_Throws_WhenActionNull()
+        {
+            var apiHandlers = new ApiHandlerCollection();
+
+            Action action = () => apiHandlers.Next(null);
+
+            action.ShouldThrow<ArgumentNullException>();
+        }
+
+        [Test]
+        public void Next_GetsSameActionHandlersInRegisteredOrder()
+        {
+            var firstResponse = new ApiResponse(502);
+            var secondResponse = new ApiResponse(500);
+            var thirdResponse = new ApiResponse(200);
+            var apiHandlers = new ApiHandlerCollection();
+            apiHandlers.Set("GET /x/32", _ => Task.FromResult(firstResponse));
+            apiHandlers.Set("GET /x/32", _ => Task.FromResult(secondResponse));
+            apiHandlers.Set("GET /x/32", _ => Task.FromResult(thirdResponse));
+
+            var first = apiHandlers.Next("GET /x/32");
+            var second = apiHandlers.Next("GET /x/32");
+            var third = apiHandlers.Next("GET /x/32");
+            var fourth = apiHandlers.Next("GET /x/32");
+
+            apiHandlers.ShouldSatisfyAllConditions(
+                () => first(null).Result.ShouldBeSameAs(firstResponse),
+                () => second(null).Result.ShouldBeSameAs(secondResponse),
+                () => third(null).Result.ShouldBeSameAs(thirdResponse),
+                () => fourth(null).Result.ShouldBeSameAs(thirdResponse)
+            );
+        }
     }
 }

@@ -12,6 +12,7 @@ namespace Xim.Simulators.Api
     /// </summary>
     public sealed class ApiHandlerCollection : IEnumerable<ApiHandler>, ICloneable
     {
+        private readonly object _handlersLock = new object();
         private readonly Dictionary<string, Route> _handlers;
 
         /// <summary>
@@ -60,30 +61,71 @@ namespace Xim.Simulators.Api
 
         internal void Set(string action, ApiHandler handler)
         {
-            var route = new Route(
-                action ?? throw new ArgumentNullException(nameof(action)),
-                handler ?? throw new ArgumentNullException(nameof(handler))
-            );
-            _handlers[route.Action] = route;
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+            lock (_handlersLock)
+            {
+                _handlers.TryGetValue(action, out var previous);
+                var route = new Route(
+                    action,
+                    handler,
+                    previous
+                );
+                _handlers[route.Action] = route;
+            }
         }
 
         internal void Set<T>(string action, ApiHandler<T> handler)
         {
-            var route = new Route<T>(
-                action ?? throw new ArgumentNullException(nameof(action)),
-                handler ?? throw new ArgumentNullException(nameof(handler))
-            );
-            _handlers[route.Action] = route;
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+            if (handler == null)
+                throw new ArgumentNullException(nameof(handler));
+            lock (_handlersLock)
+            {
+                _handlers.TryGetValue(action, out var previous);
+                var route = new Route<T>(
+                    action,
+                    handler,
+                    previous
+                );
+                _handlers[route.Action] = route;
+            }
         }
+
+        internal ApiHandler Next(string action)
+        {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            lock (_handlersLock)
+            {
+                var route = GetRoute(action);
+                var notInvoked = route?
+                    .AsEnumerable()
+                    .LastOrDefault(r => !r.Invoked);
+
+                route = notInvoked ?? route;
+                if (route != null)
+                    route.Invoked = true;
+
+                return route?.Handler;
+            }
+        }
+
+        private Route GetRoute(string action)
+            => _handlers.Values
+                .Select(route => new { Order = route.Match(action), Route = route })
+                .Where(item => item.Order != RouteOrder.None)
+                .OrderBy(item => item.Order)
+                .FirstOrDefault()?
+                .Route;
 
         private ApiHandler Get(string action)
             => action == null
                 ? throw new ArgumentNullException(nameof(action))
-                : _handlers.Values
-                    .Select(route => new { Order = route.Match(action), route.Handler })
-                    .Where(item => item.Order != RouteOrder.None)
-                    .OrderBy(item => item.Order)
-                    .FirstOrDefault()?
-                    .Handler;
+                : GetRoute(action)?.Handler;
     }
 }

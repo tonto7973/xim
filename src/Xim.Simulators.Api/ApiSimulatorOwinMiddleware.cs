@@ -29,7 +29,7 @@ namespace Xim.Simulators.Api
             var apiCall = ApiCall.Start(action, context);
             try
             {
-                var handler = _settings.Handlers[action] ?? _settings.DefaultHandler ?? EmptyHandler;
+                var handler = _settings.Handlers.Next(action) ?? _settings.DefaultHandler ?? EmptyHandler;
                 var response = await handler(context).ConfigureAwait(false) ?? new ApiResponse(502, "Invalid Handler");
                 using (response)
                 {

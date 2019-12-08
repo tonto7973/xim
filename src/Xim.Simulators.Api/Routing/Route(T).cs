@@ -13,8 +13,8 @@ namespace Xim.Simulators.Api.Routing
         private readonly string[] _attrs;
         private readonly string _localPathPattern;
 
-        public Route(string actionTemplate, ApiHandler<T> handler)
-            : base(actionTemplate, route => ((Route<T>)route).ToBaseHandler(handler))
+        public Route(string actionTemplate, ApiHandler<T> handler, Route previous)
+            : base(actionTemplate, route => ((Route<T>)route).ToBaseHandler(handler), previous)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
