@@ -137,7 +137,7 @@ namespace Xim.Simulators.Api
         public static Headers FromHeaderDictionary(IHeaderDictionary httpHeaders)
         {
             var headers = new Headers();
-            foreach(var item in httpHeaders)
+            foreach (var item in httpHeaders)
             {
                 headers.Add(item.Key, item.Value);
             }
