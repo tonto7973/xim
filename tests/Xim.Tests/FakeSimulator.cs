@@ -11,6 +11,9 @@ namespace Xim.Tests
 
         public Task StopAsync() => Task.CompletedTask;
 
-        public void Abort() { }
+        public void Abort()
+        {
+            // fake
+        }
     }
 }

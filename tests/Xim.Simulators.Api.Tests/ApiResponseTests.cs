@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
@@ -34,6 +35,26 @@ namespace Xim.Simulators.Api.Tests
             var response = new ApiResponse(204, headers: null);
 
             response.Headers.ShouldNotBeNull();
+        }
+
+        [TestCase(201, "Made")]
+        [TestCase(404, "Not There")]
+        public void ToString_FormatsCodeAndPhrase(int code, string phrase)
+        {
+            var expectedResponse = $"HTTP {code} {phrase}";
+            var response = new ApiResponse(code, reasonPhrase: phrase);
+
+            response.ToString().ShouldBe(expectedResponse);
+        }
+
+        [TestCase(502)]
+        [TestCase(400)]
+        public void ToString_UsesDefaultPhrase_WhenPhraseIsNull(int code)
+        {
+            var expectedResponse = $"HTTP {code} {ReasonPhrases.GetReasonPhrase(code)}";
+            var response = new ApiResponse(code, reasonPhrase: null);
+
+            response.ToString().ShouldBe(expectedResponse);
         }
 
         [Test]

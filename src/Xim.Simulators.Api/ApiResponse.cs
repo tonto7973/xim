@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Xim.Simulators.Api
 {
@@ -47,6 +48,13 @@ namespace Xim.Simulators.Api
             Headers = headers ?? new Headers();
             Body = body;
         }
+
+        /// <summary>
+        /// Returns a string representing the <see cref="ApiResponse"/>.
+        /// </summary>
+        /// <returns>A <see cref="string"/> with representing the response.</returns>
+        public override string ToString()
+            => $"HTTP {StatusCode} {ReasonPhrase ?? ReasonPhrases.GetReasonPhrase(StatusCode)}";
 
         internal Task WriteAsync(HttpContext context, ApiSimulatorSettings settings)
         {

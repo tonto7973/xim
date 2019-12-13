@@ -15,7 +15,7 @@ namespace Xim.Simulators.Api
 {
     internal sealed class ApiSimulator : Simulator, IApiSimulator
     {
-        private ConcurrentBag<ApiCall> _apiCalls = new ConcurrentBag<ApiCall>();
+        private ConcurrentStack<ApiCall> _apiCalls = new ConcurrentStack<ApiCall>();
         private bool _disposed;
         private IWebHost _webHost;
 
@@ -61,7 +61,7 @@ namespace Xim.Simulators.Api
             => new ApiSimulatorOwinMiddleware(
                 Settings,
                 _webHost.Services.GetRequiredService<ILogger<ApiSimulator>>(),
-                apiCall => _apiCalls.Add(apiCall)
+                apiCall => _apiCalls.Push(apiCall)
             );
 
         private int GetPort()
@@ -75,10 +75,7 @@ namespace Xim.Simulators.Api
                 : throw new InvalidOperationException(SR.Format(SR.SimulatorPropertyInvalid, nameof(Location)));
 
         private IEnumerable<ApiCall> GetApiCalls()
-        {
-            foreach (var apiCall in _apiCalls)
-                yield return apiCall;
-        }
+            => _apiCalls.Reverse();
 
         private bool TryGetLocation(out string location)
         {
@@ -95,7 +92,7 @@ namespace Xim.Simulators.Api
             {
                 try
                 {
-                    _apiCalls = new ConcurrentBag<ApiCall>();
+                    _apiCalls = new ConcurrentStack<ApiCall>();
                     _webHost = BuildWebHost();
                     await _webHost.StartAsync().ConfigureAwait(false);
                 }

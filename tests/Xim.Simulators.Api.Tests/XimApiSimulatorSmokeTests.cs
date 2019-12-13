@@ -77,6 +77,7 @@ namespace Xim.Simulators.Api.Tests
                             new HttpRequestMessage(HttpMethod.Get, $"{someApi.Location}/books/8794"),
                             new HttpRequestMessage(HttpMethod.Put, $"{someApi.Location}/books/8794")
                         };
+                        requests[0].Headers.Add("x-ms-name", "antal, 32");
                         var responses = await Task.WhenAll(requests.Select(client.SendAsync));
                         var content = JObject.Parse(await responses[0].Content.ReadAsStringAsync());
 
@@ -111,6 +112,7 @@ namespace Xim.Simulators.Api.Tests
                 var azureBlobApi = simulation.AddApi()
                     .SetCertificate(testCertificate)
                     .AddHandler("HEAD /mystorage1/mycontainer1", ApiResponse.Ok())
+                    .AddHandler("GET /mystorage1/mycontainer1/books.txt", new ApiResponse(500)) // 1st call - trigger retry policy
                     .AddHandler("GET /mystorage1/mycontainer1/books.txt", _ => {
                         var headers = Headers.FromString("x-ms-blob-type: BlockBlob");
                         var body = Body.FromStream(sampleFileStream);
@@ -132,10 +134,16 @@ namespace Xim.Simulators.Api.Tests
                     var cloudBlockBlob = container.GetBlockBlobReference("books.txt");
                     await cloudBlockBlob.DownloadToStreamAsync(ms, null, null, null);
                     var cloudBlockContents = Encoding.ASCII.GetString(ms.ToArray());
+                    var receivedApiCalls = azureBlobApi.ReceivedApiCalls.ToList();
 
                     cloudBlockContents.ShouldSatisfyAllConditions(
                         () => containerExists.ShouldBeTrue(),
-                        () => cloudBlockContents.ShouldBe(bookContents)
+                        () => cloudBlockContents.ShouldBe(bookContents),
+                        () => receivedApiCalls[0].Action.ShouldStartWith("HEAD /mystorage1/mycontainer1"),
+                        () => receivedApiCalls[1].Action.ShouldStartWith("GET /mystorage1/mycontainer1/books.txt"),
+                        () => receivedApiCalls[1].Response.StatusCode.ShouldBe(500),
+                        () => receivedApiCalls[2].Action.ShouldStartWith("GET /mystorage1/mycontainer1/books.txt"),
+                        () => receivedApiCalls[2].Response.StatusCode.ShouldBe(200)
                     );
                 }
                 finally
