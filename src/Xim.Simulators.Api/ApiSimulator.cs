@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -15,7 +14,7 @@ namespace Xim.Simulators.Api
 {
     internal sealed class ApiSimulator : Simulator, IApiSimulator
     {
-        private ConcurrentStack<ApiCall> _apiCalls = new ConcurrentStack<ApiCall>();
+        private ApiCallCollection _apiCalls = new ApiCallCollection();
         private bool _disposed;
         private IWebHost _webHost;
 
@@ -25,7 +24,7 @@ namespace Xim.Simulators.Api
 
         public string Location => GetLocation();
 
-        public IEnumerable<ApiCall> ReceivedApiCalls => GetApiCalls();
+        public IReadOnlyCollection<ApiCall> ReceivedApiCalls => _apiCalls;
 
         internal ApiSimulator(ApiBuilder builder)
         {
@@ -61,7 +60,7 @@ namespace Xim.Simulators.Api
             => new ApiSimulatorOwinMiddleware(
                 Settings,
                 _webHost.Services.GetRequiredService<ILogger<ApiSimulator>>(),
-                apiCall => _apiCalls.Push(apiCall)
+                apiCall => _apiCalls.Add(apiCall)
             );
 
         private int GetPort()
@@ -73,9 +72,6 @@ namespace Xim.Simulators.Api
             => TryGetLocation(out var location)
                 ? location
                 : throw new InvalidOperationException(SR.Format(SR.SimulatorPropertyInvalid, nameof(Location)));
-
-        private IEnumerable<ApiCall> GetApiCalls()
-            => _apiCalls.Reverse();
 
         private bool TryGetLocation(out string location)
         {
@@ -92,7 +88,7 @@ namespace Xim.Simulators.Api
             {
                 try
                 {
-                    _apiCalls = new ConcurrentStack<ApiCall>();
+                    _apiCalls = new ApiCallCollection();
                     _webHost = BuildWebHost();
                     await _webHost.StartAsync().ConfigureAwait(false);
                 }

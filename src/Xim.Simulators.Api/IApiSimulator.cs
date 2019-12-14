@@ -28,6 +28,6 @@ namespace Xim.Simulators.Api
         /// <summary>
         /// Gets the enumerable of received api calls for this simulator.
         /// </summary>
-        IEnumerable<ApiCall> ReceivedApiCalls { get; }
+        IReadOnlyCollection<ApiCall> ReceivedApiCalls { get; }
     }
 }

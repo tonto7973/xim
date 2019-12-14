@@ -96,9 +96,7 @@ namespace Xim.Simulators.Api
                 return;
 
             if (disposing && _ownsDisposable)
-            {
                 (Content as IDisposable)?.Dispose();
-            }
 
             _disposed = true;
         }

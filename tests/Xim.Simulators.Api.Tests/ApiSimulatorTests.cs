@@ -488,7 +488,7 @@ namespace Xim.Simulators.Api.Tests
             apiCalls.ShouldSatisfyAllConditions(
                 () => getCall.ShouldNotBeNull(),
                 () => getCall.Exception.ShouldNotBeNull(),
-                () => apiCalls.Count().ShouldBe(2),
+                () => apiCalls.Count.ShouldBe(2),
                 () => apiCalls
                         .Single(call => call.Action == "PATCH /api/v2/books/32")
                         .ShouldNotBeNull()
