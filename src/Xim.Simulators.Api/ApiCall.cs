@@ -22,12 +22,12 @@ namespace Xim.Simulators.Api
         /// <summary>
         /// Gets the http request recorded during the call.
         /// </summary>
-        public HttpRequest Request { get; }
+        public ApiRequest Request { get; }
 
         /// <summary>
         /// Gets the http response recorded duting the call.
         /// </summary>
-        public HttpResponse Response { get; }
+        public ApiResponse Response { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="Exception"/> recorded during the api call. Can be null.
@@ -49,19 +49,22 @@ namespace Xim.Simulators.Api
             StartTimeUtc = DateTime.UtcNow;
             Id = context.TraceIdentifier;
             Action = action;
-            Request = context.Request;
-            Response = context.Response;
+            Request = new ApiRequest(context.Request);
         }
 
         internal static ApiCall Start(string action, HttpContext context)
             => new ApiCall(action, context);
+
+        internal void Succeed(ApiResponse response)
+            => Response = response;
+
+        internal void Fail(Exception exception)
+            => Exception = exception;
 
         internal ApiCall Stop()
         {
             Duration = DateTime.UtcNow - StartTimeUtc;
             return this;
         }
-
-        internal void Fail(Exception exception) => Exception = exception;
     }
 }

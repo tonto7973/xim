@@ -14,14 +14,15 @@ namespace Xim.Simulators.Api.Tests
         public void Start_CreatesApiCallWithCorrectProperties(string action)
         {
             var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "ABC";
 
             var apiCall = ApiCall.Start(action, httpContext);
 
             apiCall.ShouldSatisfyAllConditions(
                 () => apiCall.Id.ShouldBe(httpContext.TraceIdentifier),
                 () => apiCall.Action.ShouldBe(action),
-                () => apiCall.Request.ShouldBeSameAs(httpContext.Request),
-                () => apiCall.Response.ShouldBeSameAs(httpContext.Response),
+                () => apiCall.Request.Method.ShouldBe(httpContext.Request.Method),
+                () => apiCall.Response.ShouldBeNull(),
                 () => apiCall.Exception.ShouldBeNull(),
                 () => apiCall.StartTimeUtc.ShouldNotBe(default),
                 () => apiCall.Duration.ShouldBe(TimeSpan.Zero)

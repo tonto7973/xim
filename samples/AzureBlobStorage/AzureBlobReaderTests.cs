@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AzureBlobStorageSample.Azure;
@@ -32,15 +33,6 @@ namespace AzureBlobStorageSample.Tests
             var azureBlobApi = _simulation
                 .AddApi()
                 .AddHandler("HEAD /devaccount1/magazines", ApiResponse.NotFound())
-                .AddHandler("GET /authors/{id}", ctx => {
-                    return ApiResponse.Ok();
-                })
-                .AddHandler<int>("GET /authors/{id}", id => {
-                    return ApiResponse.Ok();
-                })
-                .AddHandler<(int Id, bool Disabled)>("PUT /authors/{id}/{disable}", dto => {
-                    return ApiResponse.Ok();
-                })
                 .Build();
             await azureBlobApi.StartAsync();
             var testSettings = new AzureBlobSettings
@@ -60,6 +52,7 @@ namespace AzureBlobStorageSample.Tests
             var testData = Encoding.ASCII.GetBytes("{\"id\":325}");
             var azureBlobApi = _simulation
                 .AddApi()
+                .AddHandler("HEAD /devaccount1/books", new ApiResponse(500)) // retry policy
                 .AddHandler("HEAD /devaccount1/books", ApiResponse.Ok())
                 // see https://docs.microsoft.com/en-us/rest/api/storageservices/get-blob
                 .AddHandler("GET /devaccount1/books/sample.json", _ => {
@@ -77,8 +70,15 @@ namespace AzureBlobStorageSample.Tests
             var blobReader = new AzureBlobReader(testSettings);
 
             var blobFile = await blobReader.ReadFileAsync("sample.json");
+            var apiCalls = azureBlobApi.ReceivedApiCalls.ToList();
 
-            Assert.AreEqual(testData, blobFile.ToArray());
+            Assert.Multiple(() => {
+                Assert.AreEqual(testData, blobFile.ToArray());
+                StringAssert.StartsWith("HEAD /devaccount1/books", apiCalls[0].Action);
+                Assert.AreEqual(500, apiCalls[0].Response.StatusCode);
+                StringAssert.StartsWith("HEAD /devaccount1/books", apiCalls[1].Action);
+                Assert.AreEqual(200, apiCalls[1].Response.StatusCode);
+            });
         }
 
         [Test]

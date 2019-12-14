@@ -51,8 +51,8 @@ namespace Xim.Simulators.Api.Tests
 
             await middleware.InvokeAsync(context, _ => Task.CompletedTask);
 
-            recordedApiCall.Request.ShouldBeSameAs(context.Request);
-            recordedApiCall.Response.ShouldBeSameAs(context.Response);
+            recordedApiCall.Request.Method.ShouldBeSameAs(context.Request.Method);
+            recordedApiCall.Response.ShouldNotBeNull();
             recordedApiCall.Exception.ShouldBeNull();
         }
 
@@ -162,8 +162,8 @@ namespace Xim.Simulators.Api.Tests
 
             await middleware.InvokeAsync(context, _ => Task.CompletedTask).ShouldThrowAsync<InvalidOperationException>();
 
-            recordedApiCall.Request.ShouldBeSameAs(context.Request);
-            recordedApiCall.Response.ShouldBeSameAs(context.Response);
+            recordedApiCall.Request.Method.ShouldBeSameAs(context.Request.Method);
+            recordedApiCall.Response.ShouldBeNull();
             recordedApiCall.Exception.ShouldBeSameAs(exception);
         }
 

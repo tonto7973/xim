@@ -3,14 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Xim.Simulators.Api
 {
     /// <summary>
-    /// Api response headers.
+    /// Api headers.
     /// </summary>
-    public class Headers : IEnumerable<KeyValuePair<string, string>>
+    public sealed class Headers : IEnumerable<KeyValuePair<string, string>>
     {
         private readonly List<KeyValuePair<string, string>> _headers = new List<KeyValuePair<string, string>>();
 
@@ -126,6 +127,23 @@ namespace Xim.Simulators.Api
                 }
             }
 
+            return headers;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="Headers"/> from <see cref="IHeaderDictionary"/>.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If <paramref name="httpHeaders"/> is null.</exception>
+        public static Headers FromHeaderDictionary(IHeaderDictionary httpHeaders)
+        {
+            if (httpHeaders == null)
+                throw new ArgumentNullException(nameof(httpHeaders));
+
+            var headers = new Headers();
+            foreach (var item in httpHeaders)
+            {
+                headers.Add(item.Key, item.Value);
+            }
             return headers;
         }
 

@@ -37,6 +37,8 @@ namespace Xim.Simulators.Api
                         .WriteAsync(context, _settings)
                         .ConfigureAwait(false);
                 }
+                apiCall.Succeed(response);
+                _logger.LogDebug($"Request \"{action}\" succeeded");
             }
             catch (Exception exception)
             {
