@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
 using Shouldly;
 
@@ -312,7 +313,8 @@ namespace Xim.Simulators.Api.Tests
         {
             Action action = () => Headers.FromString(null);
 
-            action.ShouldThrow<ArgumentNullException>();
+            action.ShouldThrow<ArgumentNullException>()
+                .ParamName.ShouldBe("httpHeaders");
         }
 
         [Test]
@@ -343,6 +345,34 @@ namespace Xim.Simulators.Api.Tests
             var headers = Headers.FromString("Location: Home\r\nX-Operation: lock,check\nETag: A634B");
 
             headers.ShouldBe(expectedHeaders);
+        }
+
+        [Test]
+        public void FromHeaderDictionary_Throws_WhenDictionaryNull()
+        {
+            Action action = () => Headers.FromHeaderDictionary(null);
+
+            action.ShouldThrow<ArgumentNullException>()
+                .ParamName.ShouldBe("httpHeaders");
+        }
+
+        [Test]
+        public void FromHeaderDictionary_SetsTheHeaders()
+        {
+            var httpHeaders = new HeaderDictionary
+            {
+                ["Colour"] = "red",
+                ["X-Opt"] = new Microsoft.Extensions.Primitives.StringValues(new string[] { "a", "b" }),
+                ["Country"] = "ABc"
+            };
+
+            var headers = Headers.FromHeaderDictionary(httpHeaders);
+
+            headers.ShouldSatisfyAllConditions(
+                () => headers["Colour"].ShouldBe("red"),
+                () => headers["X-Opt"].ShouldBe("a,b"),
+                () => headers["Country"].ShouldBe("ABc")
+            );
         }
 
         [Test]

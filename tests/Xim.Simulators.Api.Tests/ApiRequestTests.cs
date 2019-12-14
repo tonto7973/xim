@@ -33,6 +33,27 @@ namespace Xim.Simulators.Api.Tests
             );
         }
 
+        [Test]
+        public void Constructor_DoesNotSetHeaderAndBody_WhenHeaderAndBodyNull()
+        {
+            var fakeHttpRequest = Substitute.For<HttpRequest>();
+            fakeHttpRequest.Method.Returns("RECV");
+            fakeHttpRequest.Path.Returns(new PathString("/a/bc"));
+            fakeHttpRequest.Headers.Returns((IHeaderDictionary)null);
+            fakeHttpRequest.ContentType.Returns("app/empty");
+            fakeHttpRequest.Body.Returns((Stream)null);
+
+            var apiRequest = new ApiRequest(fakeHttpRequest);
+
+            apiRequest.ShouldSatisfyAllConditions(
+                () => apiRequest.Method.ShouldBe("RECV"),
+                () => apiRequest.Path.ShouldBe("/a/bc"),
+                () => apiRequest.Query.ShouldBeNull(),
+                () => apiRequest.Headers.ShouldBeNull(),
+                () => apiRequest.Body.ShouldBeNull()
+            );
+        }
+
         [TestCase("GET", "/books/32", "?great=32")]
         [TestCase("TEG", "/", null)]
         public void ToString_FormatsMethodPathAndQuery(string method, string path, string query)

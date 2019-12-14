@@ -136,6 +136,9 @@ namespace Xim.Simulators.Api
         /// <exception cref="ArgumentNullException">If <paramref name="httpHeaders"/> is null.</exception>
         public static Headers FromHeaderDictionary(IHeaderDictionary httpHeaders)
         {
+            if (httpHeaders == null)
+                throw new ArgumentNullException(nameof(httpHeaders));
+
             var headers = new Headers();
             foreach (var item in httpHeaders)
             {
