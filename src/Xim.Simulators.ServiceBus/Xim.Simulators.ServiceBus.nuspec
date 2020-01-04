@@ -13,7 +13,7 @@
     <tags>Xim coreclr netstandard</tags>
     <dependencies>
       <group targetFramework="netstandard2.0">
-        <dependency id="AMQPNetLite" version="2.2.0" />
+        <dependency id="AMQPNetLite" version="2.3.0" />
         <dependency id="Microsoft.Extensions.Logging" version="2.2.0" />
         <dependency id="Xim.Core" version="$version$" />
       </group>
