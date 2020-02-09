@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Amqp.Types;
 using AzureServiceBusSample.Azure;
 using NUnit.Framework;
 using Xim;
@@ -29,9 +30,8 @@ namespace AzureServiceBusSample.Tests
         }
 
         [TearDown]
-        public async Task TearDown()
+        public void TearDown()
         {
-            await _simulation.StopAllAsync();
             _simulation.Dispose();
             _testCertificate?.Dispose();
         }
@@ -39,6 +39,8 @@ namespace AzureServiceBusSample.Tests
         [Test]
         public async Task Receiver_CompletesDelivery_WhenBodyIsValid()
         {
+            var utcNow = DateTime.UtcNow;
+            var ttl = TimeSpan.FromMinutes(5);
             IDelivery delivery;
             var simulator = _simulation.AddServiceBus()
                 .SetCertificate(_testCertificate)
@@ -58,11 +60,33 @@ namespace AzureServiceBusSample.Tests
             var runTask = receiver.RunAsync(cts.Token);
             delivery = simulator.Queues[TestInQueue].Post(new Amqp.Message()
             {
+                Header = new Amqp.Framing.Header
+                {
+                    DeliveryCount = 3,
+                    Ttl = (uint)ttl.TotalMilliseconds
+                },
                 BodySection = new Amqp.Framing.Data
                 {
                     Binary = Encoding.ASCII.GetBytes("body1abc")
                 },
-                Properties = new Amqp.Framing.Properties { MessageId = "8457986" }
+                Properties = new Amqp.Framing.Properties
+                {
+                    MessageId = "8457986",
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    CreationTime = utcNow
+                },
+                MessageAnnotations = new Amqp.Framing.MessageAnnotations
+                {
+                    [(Symbol)"x-opt-enqueue-sequence-number"] = 1234L,
+                    [(Symbol)"x-opt-sequence-number"] = 1234L,
+                    [(Symbol)"x-opt-enqueued-time"] = utcNow,
+                    [(Symbol)"x-opt-locked-until"] = utcNow.Add(ttl),
+                    [(Symbol)"x-opt-scheduled-enqueue-time"] = utcNow.AddMinutes(10),
+                    [(Symbol)"x-opt-partition-id"] = (short)17,
+                    [(Symbol)"x-opt-partition-key"] = "Key1",
+                    [(Symbol)"x-opt-via-partition-key"] = "VKey1",
+                    [(Symbol)"x-opt-deadletter-source"] = "$deadletter"
+                }
             });
             var deliveryTask = delivery.WaitAsync(TimeSpan.FromSeconds(10));
             await Task.WhenAny(runTask, deliveryTask).ConfigureAwait(false);
