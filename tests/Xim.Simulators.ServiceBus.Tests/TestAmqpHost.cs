@@ -63,6 +63,7 @@ namespace Xim.Simulators.ServiceBus.Tests
             }, null);
             try
             {
+                cbsReceiver.SetCredit(200, true);
                 await cbsSender.SendAsync(request);
                 return await cbsReceiver.ReceiveAsync();
             }

@@ -60,7 +60,7 @@ namespace Xim.Simulators.Api
             => new ApiSimulatorOwinMiddleware(
                 Settings,
                 _webHost.Services.GetRequiredService<ILogger<ApiSimulator>>(),
-                apiCall => _apiCalls.Add(apiCall)
+                _apiCalls.Add
             );
 
         private int GetPort()

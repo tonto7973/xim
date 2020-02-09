@@ -196,6 +196,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
                 host.RegisterLinkProcessor(fakeLinkProcessor);
                 var connection = await host.ConnectAndAttachAsync();
                 await connection.CloseAsync();
+                await Task.Delay(500);
 
                 var securityContext = new SecurityContext();
                 securityContext.Authorize(link.Session.Connection);
