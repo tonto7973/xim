@@ -113,7 +113,8 @@ namespace Xim.Simulators.Api.Tests
                     .SetCertificate(testCertificate)
                     .AddHandler("HEAD /mystorage1/mycontainer1", ApiResponse.Ok())
                     .AddHandler("GET /mystorage1/mycontainer1/books.txt", new ApiResponse(500)) // 1st call - trigger retry policy
-                    .AddHandler("GET /mystorage1/mycontainer1/books.txt", _ => {
+                    .AddHandler("GET /mystorage1/mycontainer1/books.txt", _ =>
+                    {
                         var headers = Headers.FromString("x-ms-blob-type: BlockBlob");
                         var body = Body.FromStream(sampleFileStream);
                         return new ApiResponse(200, headers: headers, body: body);

@@ -13,9 +13,10 @@ namespace Xim.Simulators.Api.Tests
         public void Add_AddsItemToCollection()
         {
             var apiCall = ApiCall.Start("act", new DefaultHttpContext());
-            var collection = new ApiCallCollection();
-
-            collection.Add(apiCall);
+            var collection = new ApiCallCollection
+            {
+                apiCall
+            };
 
             collection.Count.ShouldBe(1);
             collection.ShouldHaveSingleItem().ShouldBeSameAs(apiCall);
@@ -26,10 +27,11 @@ namespace Xim.Simulators.Api.Tests
         {
             var apiCall1 = ApiCall.Start("foo", new DefaultHttpContext());
             var apiCall2 = ApiCall.Start("bar", new DefaultHttpContext());
-            var collection = new ApiCallCollection();
-
-            collection.Add(apiCall1);
-            collection.Add(apiCall2);
+            var collection = new ApiCallCollection
+            {
+                apiCall1,
+                apiCall2
+            };
             var allCalls = collection.ToList();
 
             collection.Count.ShouldBe(2);
@@ -41,15 +43,17 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void GetEnumerator_IsTheSameAsGetEnumeratorT()
         {
-            var collection = new ApiCallCollection();
-            collection.Add(ApiCall.Start("act0", new DefaultHttpContext()));
-            collection.Add(ApiCall.Start("act1", new DefaultHttpContext()));
-            collection.Add(ApiCall.Start("act2", new DefaultHttpContext()));
+            var collection = new ApiCallCollection
+            {
+                ApiCall.Start("act0", new DefaultHttpContext()),
+                ApiCall.Start("act1", new DefaultHttpContext()),
+                ApiCall.Start("act2", new DefaultHttpContext())
+            };
 
             var enumeratorT = collection.GetEnumerator();
             var enumerator = ((IEnumerable)collection).GetEnumerator();
 
-            for(var i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var canMove = enumerator.MoveNext();
                 var canMoveT = enumeratorT.MoveNext();

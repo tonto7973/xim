@@ -12,17 +12,11 @@ namespace Xim.Simulators.ServiceBus.Azure.Tests
     public class AzureHandlerTests
     {
         [TestCase(EventId.SendDelivery)]
-        public void CanHandle_ReturnsTrue_WhenSupportedEventId(EventId supportedEventId)
-        {
-            AzureHandler.Instance.CanHandle(supportedEventId).ShouldBeTrue();
-        }
+        public void CanHandle_ReturnsTrue_WhenSupportedEventId(EventId supportedEventId) => AzureHandler.Instance.CanHandle(supportedEventId).ShouldBeTrue();
 
         [TestCase(EventId.ReceiveDelivery)]
         [TestCase(EventId.LinkLocalOpen)]
-        public void CanHandle_ReturnsFalse_WhenNotSupportedEventId(EventId supportedEventId)
-        {
-            AzureHandler.Instance.CanHandle(supportedEventId).ShouldBeFalse();
-        }
+        public void CanHandle_ReturnsFalse_WhenNotSupportedEventId(EventId supportedEventId) => AzureHandler.Instance.CanHandle(supportedEventId).ShouldBeFalse();
 
         [Test]
         public void Handle_UpdatesDeliveryTag_WhenEventIdIsSendDeliveryAndContextIsIDelivery()

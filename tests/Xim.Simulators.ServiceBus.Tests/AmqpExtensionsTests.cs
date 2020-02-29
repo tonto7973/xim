@@ -16,10 +16,7 @@ namespace Xim.Simulators.ServiceBus.Tests
     public class AmqpExtensionsTests
     {
         [Test]
-        public void Clone_ReturnsNullWhenMessageNull()
-        {
-            AmqpExtensions.Clone(null).ShouldBeNull();
-        }
+        public void Clone_ReturnsNullWhenMessageNull() => AmqpExtensions.Clone(null).ShouldBeNull();
 
         [Test]
         public void Clone_ReturnsCloneOfTheMessage_WhenMessageProvided()
@@ -51,10 +48,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         }
 
         [Test]
-        public void AddSequenceNumber_ReturnsNullWhenMessageNull()
-        {
-            AmqpExtensions.AddSequenceNumber(null, 123456L).ShouldBeNull();
-        }
+        public void AddSequenceNumber_ReturnsNullWhenMessageNull() => AmqpExtensions.AddSequenceNumber(null, 123456L).ShouldBeNull();
 
         [TestCase(17L)]
         [TestCase(5487951246523L)]
@@ -147,7 +141,8 @@ namespace Xim.Simulators.ServiceBus.Tests
                 () => fakeLoggerProvider
                     .Received(2)
                     .CreateLogger(nameof(ManagementRequestProcessor)),
-                () => Received.InOrder(() => {
+                () => Received.InOrder(() =>
+                {
                     fakeHost
                         .Received(1)
                         .RegisterRequestProcessor("zb/$management", Arg.Any<ManagementRequestProcessor>());

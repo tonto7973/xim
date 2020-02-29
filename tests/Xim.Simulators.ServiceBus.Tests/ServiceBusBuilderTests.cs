@@ -66,7 +66,8 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void AddTopic_AddsTopic()
         {
-            var topic = new Topic("a");
+            Subscription[] subscriptions = null;
+            var topic = new Topic("a", subscriptions);
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
             var self = serviceBusBuilder.AddTopic(topic);

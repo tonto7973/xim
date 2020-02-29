@@ -17,7 +17,7 @@ namespace Xim.Simulators.Api.Tests
         public void Constructor_SetsRequiredProperties(int statusCode, string reasonPhrase, string httpHeaders, string data)
         {
             var headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
-            Body body = data == null ? null : Body.FromString(data);
+            var body = data == null ? null : Body.FromString(data);
 
             var apiResponse = new ApiResponse(statusCode, reasonPhrase, headers, body);
 
@@ -154,7 +154,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("Text body")]
         public void Ok_SetsProperApiResponse_WhenBodyIs(string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.Ok(body);
 
@@ -171,7 +171,7 @@ namespace Xim.Simulators.Api.Tests
         public void OkWithHeaders_SetsProperApiResponse_WhenBodyIs(string httpHeaders, string httpBody)
         {
             var headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.Ok(headers, body);
 
@@ -219,7 +219,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null, "some body")]
         public void Created_SetsProperApiResponse(string id, string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
             var location = new Uri($"https://rest.io/items/{id}");
 
             var response = ApiResponse.Created(location, body);
@@ -255,7 +255,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null, "request accepted")]
         public void Accepted_SetsProperApiResponse(string id, string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
             var location = new Uri($"http://localhost:801/data/{id}");
 
             var response = ApiResponse.Accepted(location, body);
@@ -294,7 +294,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null)]
         public void BadRequest_SetsProperApiResponse(string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.BadRequest(body);
 
@@ -325,7 +325,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null)]
         public void Unathorized_SetsProperApiResponse(string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.Unauthorized(body);
 
@@ -342,7 +342,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null)]
         public void Unathorized_SetsProperApiResponse_WhenChallengeIs(string challenge)
         {
-            Body body = challenge == null ? null : Body.FromString(challenge);
+            var body = challenge == null ? null : Body.FromString(challenge);
             challenge = challenge ?? "bearer";
 
             var response = ApiResponse.Unauthorized(challenge, body);
@@ -392,7 +392,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null)]
         public void Forbidden_SetsProperApiResponse(string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.Forbidden(body);
 
@@ -423,7 +423,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("resource not found")]
         public void NotFound_SetsProperApiResponse(string httpBody)
         {
-            Body body = httpBody == null ? null : Body.FromString(httpBody);
+            var body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.NotFound(body);
 
