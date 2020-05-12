@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Xim.Simulators.Api
 {
     /// <summary>
-    /// Api response body.
+    /// Api body.
     /// </summary>
     public abstract class Body : IDisposable
     {
@@ -15,20 +15,20 @@ namespace Xim.Simulators.Api
         private bool _ownsDisposable;
 
         /// <summary>
-        /// Gets the content representing the body of the response.
+        /// Gets the content representing the body.
         /// </summary>
         public object Content { get; }
 
         /// <summary>
-        /// Gets the Content-Type header for the response.
+        /// Gets the Content-Type header for the body.
         /// </summary>
         public string ContentType { get; }
 
         /// <summary>
         /// Initializes a new instance of <see cref="Body"/> class.
         /// </summary>
-        /// <param name="content">The content representing the response body.</param>
-        /// <param name="contentType">The Content-Type header for the response.</param>
+        /// <param name="content">The content representing the body.</param>
+        /// <param name="contentType">The Content-Type header for the body.</param>
         protected Body(object content, string contentType)
         {
             Content = content;
@@ -38,10 +38,10 @@ namespace Xim.Simulators.Api
         /// <summary>
         /// Creates a new instance of <see cref="Body"/> with a string body.
         /// </summary>
-        /// <param name="httpBody">The <see cref="string"/> representing the response body.</param>
+        /// <param name="httpBody">The <see cref="string"/> representing the body.</param>
         /// <param name="encoding">Optional encoding. The default is <see cref="Encoding.UTF8"/>.</param>
         /// <param name="mediaType">Optional media type. The default is "text/plain".</param>
-        /// <returns>The newly created response <see cref="Body"/>.</returns>
+        /// <returns>The newly created <see cref="Body"/>.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="httpBody"/> is null.</exception>
         public static Body FromString(string httpBody, Encoding encoding = null, string mediaType = null)
             => InternalFromString(
@@ -53,10 +53,10 @@ namespace Xim.Simulators.Api
         /// <summary>
         /// Creates a new instance of <see cref="Body"/> with a stream body.
         /// </summary>
-        /// <param name="stream">The <see cref="Stream"/> representing the response body.</param>
-        /// <param name="contentType">Content-Type header for the response. The default is <c>"application/octet-stream"</c>.</param>
+        /// <param name="stream">The <see cref="Stream"/> representing the body.</param>
+        /// <param name="contentType">Content-Type header for the body. The default is <c>"application/octet-stream"</c>.</param>
         /// <param name="leaveOpen">true to leave the <paramref name="stream"/> open after the <see cref="Body"/> is written; otherwise, false.</param>
-        /// <returns>The newly created response <see cref="Body"/>.</returns>
+        /// <returns>The newly created <see cref="Body"/>.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="stream"/> is null.</exception>
         public static Body FromStream(Stream stream, string contentType = null, bool leaveOpen = false)
             => new Body<Stream>(stream ?? throw new ArgumentNullException(nameof(stream)), contentType)
@@ -70,7 +70,7 @@ namespace Xim.Simulators.Api
         /// <typeparam name="TContent">The type of the body <paramref name="value"/>.</typeparam>
         /// <param name="value">The object representing the body.</param>
         /// <param name="encoding"></param>
-        /// <returns>The newly created response <see cref="Body"/>.</returns>
+        /// <returns>The newly created <see cref="Body"/>.</returns>
         public static Body FromObject<TContent>(TContent value, Encoding encoding = null)
             => new Body<TContent>(value, encoding);
 
