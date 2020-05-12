@@ -147,8 +147,8 @@ namespace Xim.Simulators.ServiceBus
         private ContainerHost BuildServiceBusHost()
         {
             var port = Settings.Port == 0 ? FindAvailablePort(DefaultPort) : Settings.Port;
-            var address = new Uri($"amqp://localhost:{port}");
-            var host = new ContainerHost(new[] { address }, null, address.UserInfo);
+            var address = new Address($"amqp://localhost:{port}");
+            var host = new ContainerHost(address);
 
             host.Listeners[0].HandlerFactory = _ => AzureHandler.Instance;
             host.Listeners[0].SASL.EnableAzureSaslMechanism();
@@ -163,8 +163,8 @@ namespace Xim.Simulators.ServiceBus
         private ContainerHost BuildSecureServiceBusHost()
         {
             var port = Settings.Port == 0 ? FindAvailablePort(DefaultSecurePort) : Settings.Port;
-            var address = new Uri($"amqps://localhost:{port}");
-            var host = new ContainerHost(new[] { address }, Settings.Certificate, address.UserInfo);
+            var address = new Address($"amqps://localhost:{port}");
+            var host = new ContainerHost(new[] { address }, Settings.Certificate);
 
             host.Listeners[0].HandlerFactory = _ => AzureHandler.Instance;
             host.Listeners[0].SASL.EnableAzureSaslMechanism();

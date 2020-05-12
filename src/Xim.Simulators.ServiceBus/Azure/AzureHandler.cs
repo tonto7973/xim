@@ -20,7 +20,7 @@ namespace Xim.Simulators.ServiceBus.Azure
             }
         }
 
-        private void HandleSendDelivery(IDelivery delivery)
+        private static void HandleSendDelivery(IDelivery delivery)
             => delivery.Tag = Guid.NewGuid().ToByteArray();
     }
 }

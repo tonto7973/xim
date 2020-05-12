@@ -327,7 +327,8 @@ namespace Xim.Simulators.ServiceBus.Tests
             Func<Task> action = async () => await serviceBusSimulator.StartAsync();
             try
             {
-                await action.ShouldThrowAsync<UriFormatException>();
+                (await action.ShouldThrowAsync<ArgumentOutOfRangeException>())
+                    .ParamName.ShouldBe("port");
                 serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
             }
             finally

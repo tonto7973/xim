@@ -58,7 +58,7 @@ namespace Xim.Simulators.ServiceBus.Processing
             }
         }
 
-        private Message GetResponseMessage(int responseCode, RequestContext requestContext)
+        private static Message GetResponseMessage(int responseCode, RequestContext requestContext)
             => new Message
             {
                 Properties = new Properties

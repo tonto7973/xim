@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
@@ -28,6 +29,17 @@ namespace Xim.Simulators.ServiceBus.Tests
         }
 
         [Test]
+        public void AddTopic_Throws_WhenServiceBusBuilderNull()
+        {
+            ServiceBusBuilder serviceBusBuilder = null;
+
+            Action action = () => serviceBusBuilder.AddTopic("foo", "bar");
+
+            action.ShouldThrow<ArgumentNullException>()
+                .ParamName.ShouldBe("serviceBusBuilder");
+        }
+
+        [Test]
         public void AddTopic_AddsTopicToBuilder()
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
@@ -54,6 +66,17 @@ namespace Xim.Simulators.ServiceBus.Tests
                 () => serviceBusBuilder.Topics[0].Subscriptions.Select(s => s.Name).ToArray().ShouldBe(subs ?? new string[0]),
                 () => self.ShouldBeSameAs(serviceBusBuilder)
             );
+        }
+
+        [Test]
+        public void AddQueue_Throws_WhenServiceBusBuilderNull()
+        {
+            ServiceBusBuilder serviceBusBuilder = null;
+
+            Action action = () => serviceBusBuilder.AddQueue("foo");
+
+            action.ShouldThrow<ArgumentNullException>()
+                .ParamName.ShouldBe("serviceBusBuilder");
         }
 
         [TestCase("abe")]
