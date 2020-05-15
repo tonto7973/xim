@@ -32,16 +32,17 @@ namespace Xim.Simulators.Api
         /// </summary>
         public Body Body { get; }
 
-        /// <summary>
-        /// Creates a new instance of <see cref="ApiRequest"/>.
-        /// </summary>
         internal ApiRequest(HttpRequest request)
         {
             Method = request.Method;
             Path = request.Path;
             Query = request.QueryString.Value;
-            Headers = request.Headers == null ? null : Headers.FromHeaderDictionary(request.Headers);
-            Body = request.Body == null ? null : Body.FromStream(request.Body, request.ContentType, true);
+            Headers = request.Headers == null
+                ? null
+                : Headers.FromHeaderDictionary(request.Headers);
+            Body = request.Body == null
+                ? null
+                : Body.FromRequest(request);
         }
 
         /// <summary>

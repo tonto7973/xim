@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,9 +28,11 @@ namespace Xim.Simulators.Api
         /// </summary>
         public new TObject Content => (TObject)base.Content;
 
-        internal Body(TObject content, string contentType) : base(content, contentType) { }
+        internal Body(TObject content, string contentType, long? contentLength)
+            : base(content, contentType, contentLength) { }
 
-        internal Body(TObject content, Encoding encoding) : base(content, null)
+        internal Body(TObject content, Encoding encoding)
+            : base(content, null, null)
         {
             _encoding = encoding;
         }
@@ -45,10 +48,38 @@ namespace Xim.Simulators.Api
                 ? WriteStreamAsync(stream, context.Response)
                 : WriteContentAsync(context, settings);
 
-        private Task WriteStreamAsync(Stream stream, HttpResponse response)
+        private async Task WriteStreamAsync(Stream stream, HttpResponse response)
         {
             response.ContentType = ContentType ?? BinaryEncoding;
-            return stream.CopyToAsync(response.Body);
+            response.ContentLength = ContentLength ?? response.ContentLength;
+
+            var bytesAvailable = response.ContentLength;
+            var bufferSize = 81920;
+
+            if (bytesAvailable.HasValue && bytesAvailable.Value < bufferSize)
+                bufferSize = (int)bytesAvailable.Value;
+
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try
+            {
+                int bytesRead;
+                while (bufferSize > 0 && (bytesRead = await stream.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) != 0)
+                {
+                    await response.Body
+                        .WriteAsync(buffer, 0, bytesRead)
+                        .ConfigureAwait(false);
+                    if (bytesAvailable.HasValue)
+                    {
+                        bytesAvailable = bytesAvailable.Value - bytesRead;
+                        if (bytesAvailable.Value < bufferSize)
+                            bufferSize = (int)bytesAvailable.Value;
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+            }
         }
 
         private Task WriteContentAsync(HttpContext context, ApiSimulatorSettings settings)

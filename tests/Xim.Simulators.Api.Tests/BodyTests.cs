@@ -155,6 +155,24 @@ namespace Xim.Simulators.Api.Tests
         }
 
         [Test]
+        public async Task FromStream_WritesValidContentLength_WhenContentLengthSet([Values(4, 12, 22)]long length)
+        {
+            var context = new DefaultHttpContext();
+            var responseStream = new MemoryStream();
+            var settings = new ApiSimulatorSettings(new ApiBuilder(Substitute.For<ISimulation>()));
+            var bytes = Encoding.UTF8.GetBytes("Hello world!");
+            var body = Body.FromStream(new MemoryStream(bytes), "test/abc", length);
+            var expectedLength = Math.Min(length, bytes.Length);
+            context.Response.Body = responseStream;
+
+            await body.InternalWriteAsync(context, settings);
+
+            context.Response.ContentType.ShouldBe("test/abc");
+            context.Response.ContentLength.ShouldBe(length);
+            responseStream.Length.ShouldBe(expectedLength);
+        }
+
+        [Test]
         public void FromObject_AcceptsNull()
         {
             Action action = () => Body.FromObject((string)null);

@@ -170,7 +170,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public async Task InvokeAsync_DisposesApiResponse()
         {
-            var body = Substitute.ForPartsOf<Body>("foo", "text/plain");
+            var body = Substitute.ForPartsOf<Body>("foo", "text/plain", null);
             var response = new ApiResponse(202, body: body);
             var logger = Substitute.For<ILogger>();
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())

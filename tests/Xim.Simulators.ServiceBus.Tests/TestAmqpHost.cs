@@ -16,8 +16,8 @@ namespace Xim.Simulators.ServiceBus.Tests
         public static ContainerHost Open(int preferredPort = 0)
         {
             var port = preferredPort == 0 ? TestTcpUtils.FindFreePort() : preferredPort;
-            var uri = new Uri($"amqp://localhost:{port}");
-            var host = new ContainerHost(new[] { uri }, null, uri.UserInfo);
+            var address = new Address($"amqp://localhost:{port}");
+            var host = new ContainerHost(address);
             host.Listeners[0].SASL.EnableExternalMechanism = true;
             host.Listeners[0].SASL.EnableAnonymousMechanism = true;
             host.Open();

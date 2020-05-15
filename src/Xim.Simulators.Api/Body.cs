@@ -13,6 +13,7 @@ namespace Xim.Simulators.Api
     {
         private bool _disposed;
         private bool _ownsDisposable;
+        private ApiSimulatorSettings _settings;
 
         /// <summary>
         /// Gets the content representing the body.
@@ -25,14 +26,21 @@ namespace Xim.Simulators.Api
         public string ContentType { get; }
 
         /// <summary>
+        /// Gets the Content-Length header for the body, if specified.
+        /// </summary>
+        public long? ContentLength { get; }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="Body"/> class.
         /// </summary>
         /// <param name="content">The content representing the body.</param>
         /// <param name="contentType">The Content-Type header for the body.</param>
-        protected Body(object content, string contentType)
+        /// <param name="contentLength">Optional Content-Length header for the body.</param>
+        protected Body(object content, string contentType, long? contentLength = null)
         {
             Content = content;
             ContentType = contentType;
+            ContentLength = contentLength;
         }
 
         /// <summary>
@@ -55,11 +63,12 @@ namespace Xim.Simulators.Api
         /// </summary>
         /// <param name="stream">The <see cref="Stream"/> representing the body.</param>
         /// <param name="contentType">Content-Type header for the body. The default is <c>"application/octet-stream"</c>.</param>
+        /// <param name="contentLength">Optional Content-Length header for the body.</param>
         /// <param name="leaveOpen">true to leave the <paramref name="stream"/> open after the <see cref="Body"/> is written; otherwise, false.</param>
         /// <returns>The newly created <see cref="Body"/>.</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="stream"/> is null.</exception>
-        public static Body FromStream(Stream stream, string contentType = null, bool leaveOpen = false)
-            => new Body<Stream>(stream ?? throw new ArgumentNullException(nameof(stream)), contentType)
+        public static Body FromStream(Stream stream, string contentType = null, long? contentLength = null, bool leaveOpen = false)
+            => new Body<Stream>(stream ?? throw new ArgumentNullException(nameof(stream)), contentType, contentLength)
             {
                 _ownsDisposable = !leaveOpen
             };
@@ -73,6 +82,13 @@ namespace Xim.Simulators.Api
         /// <returns>The newly created <see cref="Body"/>.</returns>
         public static Body FromObject<TContent>(TContent value, Encoding encoding = null)
             => new Body<TContent>(value, encoding);
+
+        internal static Body FromRequest(HttpRequest request)
+            => new Body<Stream>(request.Body, request.ContentType, request.ContentLength)
+            {
+                _ownsDisposable = false,
+                _settings = null // TODO: get from http context
+            };
 
         /// <summary> 
         /// Writes the body to the response stream. 
@@ -111,9 +127,12 @@ namespace Xim.Simulators.Api
         }
 
         private static Body<Stream> InternalFromString(string httpBody, Encoding encoding, string mediaType)
-            => new Body<Stream>(new MemoryStream(encoding.GetBytes(httpBody)), mediaType + "; charset=" + encoding.HeaderName)
+        {
+            var bytes = encoding.GetBytes(httpBody);
+            return new Body<Stream>(new MemoryStream(bytes), mediaType + "; charset=" + encoding.HeaderName, bytes.LongLength)
             {
                 _ownsDisposable = true
             };
+        }
     }
 }
