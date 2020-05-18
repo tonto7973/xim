@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Xim.Simulators.Api.Internal;
 
 namespace Xim.Simulators.Api
 {
@@ -87,7 +88,7 @@ namespace Xim.Simulators.Api
             => new Body<Stream>(request.Body, request.ContentType, request.ContentLength)
             {
                 _ownsDisposable = false,
-                _settings = null // TODO: get from http context
+                _settings = request.HttpContext.GetApiSimulatorSettings()
             };
 
         /// <summary> 

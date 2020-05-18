@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Xim.Simulators.Api.Internal;
 
 namespace Xim.Simulators.Api
 {
@@ -22,6 +23,7 @@ namespace Xim.Simulators.Api
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            context.SetApiSimulatorSettings(_settings);
             var action = context.Request.Method
                 + " " + context.Request.Path.Value
                 + (context.Request.QueryString.Value ?? "");

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Http;
+using Xim.Simulators.Api.Internal;
 
 namespace Xim.Simulators.Api
 {
@@ -117,6 +118,8 @@ namespace Xim.Simulators.Api
             {
                 throw new FormatException(SR.Format(SR.ApiResponseNotFormatted));
             }
+
+            context.SetApiSimulatorBodyEncoding(charset);
 
             context.Response.ContentType = contentType + "; charset=" + charset.HeaderName;
             context.Response.ContentLength = data.Length;
