@@ -38,6 +38,16 @@ namespace Xim.Simulators.Api
             _encoding = encoding;
         }
 
+        /// <summary>
+        /// Deserializes object from request <see cref="Body"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize.</typeparam>
+        /// <param name="context">The <see cref="HttpContext"/>.</param> 
+        /// <param name="settings">The <see cref="ApiSimulatorSettings"/>.</param> 
+        /// <returns>A task that represents the asynchronous read operation.</returns>
+        protected override Task<T> ReadAsync<T>(HttpContext context, ApiSimulatorSettings settings)
+            => ReadStreamAsync<T>(context.Request.Body, context.Request, settings);
+
         /// <summary> 
         /// Writes the body to the response stream. 
         /// </summary> 
@@ -49,38 +59,12 @@ namespace Xim.Simulators.Api
                 ? WriteStreamAsync(stream, context.Response)
                 : WriteContentAsync(context, settings);
 
-        private async Task WriteStreamAsync(Stream stream, HttpResponse response)
+        private Task WriteStreamAsync(Stream stream, HttpResponse response)
         {
             response.ContentType = ContentType ?? BinaryEncoding;
             response.ContentLength = ContentLength ?? response.ContentLength;
 
-            var bytesAvailable = response.ContentLength;
-            var bufferSize = 81920;
-
-            if (bytesAvailable.HasValue && bytesAvailable.Value < bufferSize)
-                bufferSize = (int)bytesAvailable.Value;
-
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            try
-            {
-                int bytesRead;
-                while (bufferSize > 0 && (bytesRead = await stream.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) != 0)
-                {
-                    await response.Body
-                        .WriteAsync(buffer, 0, bytesRead)
-                        .ConfigureAwait(false);
-                    if (bytesAvailable.HasValue)
-                    {
-                        bytesAvailable = bytesAvailable.Value - bytesRead;
-                        if (bytesAvailable.Value < bufferSize)
-                            bufferSize = (int)bytesAvailable.Value;
-                    }
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
-            }
+            return CopyBytesAsync(stream, response.Body, response.ContentLength);
         }
 
         private Task WriteContentAsync(HttpContext context, ApiSimulatorSettings settings)
@@ -143,6 +127,90 @@ namespace Xim.Simulators.Api
                 namespaces.Add(string.Empty, string.Empty);
                 xmlSerializer.Serialize(xmlWriter, value, namespaces);
                 return ms.ToArray();
+            }
+        }
+
+        private static async Task CopyBytesAsync(Stream input, Stream output, long? length)
+        {
+            var bytesAvailable = length;
+            var bufferSize = 81920;
+
+            if (bytesAvailable.HasValue && bytesAvailable.Value < bufferSize)
+                bufferSize = (int)bytesAvailable.Value;
+
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try
+            {
+                int bytesRead;
+                while (bufferSize > 0 && (bytesRead = await input.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) != 0)
+                {
+                    await output
+                        .WriteAsync(buffer, 0, bytesRead)
+                        .ConfigureAwait(false);
+                    if (bytesAvailable.HasValue)
+                    {
+                        bytesAvailable = bytesAvailable.Value - bytesRead;
+                        if (bytesAvailable.Value < bufferSize)
+                            bufferSize = (int)bytesAvailable.Value;
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+            }
+        }
+
+        private static async Task<T> ReadStreamAsync<T>(Stream body, HttpRequest request, ApiSimulatorSettings settings)
+        {
+            if (request.ContentType?.Contains(JsonEncoding) == true)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await CopyBytesAsync(body, ms, request.ContentLength).ConfigureAwait(false);
+                    var charset = request.HttpContext.GetApiSimulatorBodyEncoding() ?? request.GetCharset();
+                    return await DeserializeJsonAsync<T>(ms, settings.JsonSettings, charset).ConfigureAwait(false);
+                }
+            }
+            else if (request.ContentType?.Contains(XmlEncoding) == true)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await CopyBytesAsync(body, ms, request.ContentLength).ConfigureAwait(false);
+                    ms.Position = 0;
+                    var charset = request.HttpContext.GetApiSimulatorBodyEncoding() ?? request.GetCharset() ?? Encoding.UTF8;
+                    return DeserializeXml<T>(ms, new XmlReaderSettings(), charset);
+                }
+            }
+            else
+                throw new NotSupportedException(SR.Format(SR.ApiRequestFormatNotSupported, request.ContentType));
+        }
+
+        private static ValueTask<T> DeserializeJsonAsync<T>(Stream data, JsonSerializerOptions options, Encoding encoding)
+        {
+            if (encoding == null || encoding == Encoding.UTF8)
+            {
+                return JsonSerializer
+                    .DeserializeAsync<T>(data, options);
+            }
+            else
+            {
+                using (var reader = new StreamReader(data, encoding))
+                {
+                    string json = reader.ReadToEnd();
+                    T result = JsonSerializer.Deserialize<T>(json, options);
+                    return new ValueTask<T>(result);
+                }
+            }
+        }
+
+        private static T DeserializeXml<T>(Stream data, XmlReaderSettings xmlSettings, Encoding encoding)
+        {
+            var xmlSerializer = new XmlSerializer(typeof(T));
+            using (var sr = new StreamReader(data, encoding ?? Encoding.UTF8))
+            using (var xmlReader = XmlReader.Create(sr, xmlSettings))
+            {
+                return (T)xmlSerializer.Deserialize(xmlReader);
             }
         }
     }

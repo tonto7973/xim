@@ -91,6 +91,15 @@ namespace Xim.Simulators.Api
                 _settings = request.HttpContext.GetApiSimulatorSettings()
             };
 
+        /// <summary>
+        /// Deserializes object from request <see cref="Body"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize.</typeparam>
+        /// <param name="context">The <see cref="HttpContext"/>.</param> 
+        /// <param name="settings">The <see cref="ApiSimulatorSettings"/>.</param> 
+        /// <returns>A task that represents the asynchronous read operation.</returns>
+        protected abstract Task<T> ReadAsync<T>(HttpContext context, ApiSimulatorSettings settings);
+
         /// <summary> 
         /// Writes the body to the response stream. 
         /// </summary> 
@@ -101,6 +110,34 @@ namespace Xim.Simulators.Api
 
         internal Task InternalWriteAsync(HttpContext context, ApiSimulatorSettings settings)
             => WriteAsync(context, settings);
+
+        /// <summary>
+        /// Reads the body as a <see cref="Stream"/>.
+        /// </summary>
+        /// <returns>A <see cref="Stream"/> representing the body.</returns>
+        public Stream ReadAsStream()
+            => Content is Stream content
+                ? content
+                : ReadContentAsStream(new DefaultHttpContext(), _settings);
+
+        /// <summary>
+        /// Reads the body as a <see cref="string"/>.
+        /// </summary>
+        /// <returns>A <see cref="string"/> representing the body.</returns>
+        public string ReadAsString()
+            => Content is string content
+                ? content
+                : ReadContentAsString(new DefaultHttpContext(), _settings);
+
+        /// <summary>
+        /// Deserializes the body into a <typeparamref name="TObject"/>.
+        /// </summary>
+        /// <typeparam name="TObject">Type of the object to deserialize to.</typeparam>
+        /// <returns>The deserialized object.</returns>
+        public TObject ReadAs<TObject>()
+            => Content is TObject content
+                ? content
+                : ReadContentAs<TObject>(new DefaultHttpContext(), _settings);
 
         /// <summary>
         /// Releases all resources currently used by this <see cref="Body"/> instance.
@@ -134,6 +171,48 @@ namespace Xim.Simulators.Api
             {
                 _ownsDisposable = true
             };
+        }
+
+        private MemoryStream ReadContentAsStream(HttpContext context, ApiSimulatorSettings settings)
+        {
+            var body = new MemoryStream();
+
+            context.Response.Body = body;
+
+            WriteAsync(context, settings ?? new ApiSimulatorSettings())
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
+
+            body.Position = 0;
+
+            return body;
+        }
+
+        private string ReadContentAsString(HttpContext context, ApiSimulatorSettings settings)
+        {
+            using (var body = ReadContentAsStream(context, settings))
+            {
+                var encoding = context.GetApiSimulatorBodyEncoding() ?? Encoding.UTF8;
+                return encoding.GetString(body.ToArray());
+            }
+        }
+
+        private TObject ReadContentAs<TObject>(DefaultHttpContext context, ApiSimulatorSettings settings)
+        {
+            settings = settings ?? new ApiSimulatorSettings();
+            var body = Content is Stream content
+                ? content
+                : ReadContentAsStream(context, settings);
+
+            context.Request.Body = body;
+            context.Request.ContentType = ContentType;
+            context.Request.ContentLength = ContentLength;
+
+            return ReadAsync<TObject>(context, settings)
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
         }
     }
 }

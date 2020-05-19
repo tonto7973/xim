@@ -11,7 +11,7 @@
 namespace Xim {
     using System;
     
-    /// <exclude/>
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -111,6 +111,15 @@ namespace Xim {
         internal static string ApiHeaderValueIsInvalid {
             get {
                 return ResourceManager.GetString("ApiHeaderValueIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to parse request; there is no registered media formatter for Content-Type: {0}.
+        /// </summary>
+        internal static string ApiRequestFormatNotSupported {
+            get {
+                return ResourceManager.GetString("ApiRequestFormatNotSupported", resourceCulture);
             }
         }
         
