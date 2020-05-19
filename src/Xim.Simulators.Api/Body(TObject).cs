@@ -138,7 +138,7 @@ namespace Xim.Simulators.Api
             if (bytesAvailable.HasValue && bytesAvailable.Value < bufferSize)
                 bufferSize = (int)bytesAvailable.Value;
 
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
             {
                 int bytesRead;
@@ -183,7 +183,9 @@ namespace Xim.Simulators.Api
                 }
             }
             else
+            {
                 throw new NotSupportedException(SR.Format(SR.ApiRequestFormatNotSupported, request.ContentType));
+            }
         }
 
         private static ValueTask<T> DeserializeJsonAsync<T>(Stream data, JsonSerializerOptions options, Encoding encoding)
@@ -197,8 +199,8 @@ namespace Xim.Simulators.Api
             {
                 using (var reader = new StreamReader(data, encoding))
                 {
-                    string json = reader.ReadToEnd();
-                    T result = JsonSerializer.Deserialize<T>(json, options);
+                    var json = reader.ReadToEnd();
+                    var result = JsonSerializer.Deserialize<T>(json, options);
                     return new ValueTask<T>(result);
                 }
             }

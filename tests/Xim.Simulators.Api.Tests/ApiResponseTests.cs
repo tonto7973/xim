@@ -60,7 +60,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DisposesBody()
         {
-            var body = Substitute.ForPartsOf<Body>(new object(), "any", (long?)null);
+            var body = Substitute.ForPartsOf<Body>(new object(), "any", null);
             var apiResponse = new ApiResponse(200, null, null, body);
 
             apiResponse.Dispose();
@@ -71,7 +71,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DisposesBodyOnlyOnce_WhenCalledMultipleTimes()
         {
-            var body = Substitute.ForPartsOf<Body>(new object(), "any", (long?)null);
+            var body = Substitute.ForPartsOf<Body>(new object(), "any", null);
             var apiResponse = new ApiResponse(302, body: body);
 
 #pragma warning disable S3966 // Objects should not be disposed more than once - required for unit test
