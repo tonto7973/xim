@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ namespace Xim.Simulators.Api
                 + " " + context.Request.Path.Value
                 + (context.Request.QueryString.Value ?? "");
             _logger.LogDebug($"Request \"{action}\" started");
+            var requestBodyStream = await OverrideRequestBodyAsync(context.Request).ConfigureAwait(false);
             var apiCall = ApiCall.Start(action, context);
             try
             {
@@ -50,9 +52,24 @@ namespace Xim.Simulators.Api
             }
             finally
             {
+                context.Request.Body = requestBodyStream;
                 _apiCall.Invoke(apiCall.Stop());
                 _logger.LogDebug($"Request \"{action}\" completed");
             }
+        }
+
+        private static async Task<Stream> OverrideRequestBodyAsync(HttpRequest request)
+        {
+            var oldBody = request.Body;
+            if (oldBody != null)
+            {
+                var newBody = new MemoryStream();
+                await Body
+                    .CopyBytesAsync(oldBody, newBody, request.ContentLength)
+                    .ConfigureAwait(false);
+                request.Body = newBody;
+            }
+            return oldBody;
         }
     }
 }

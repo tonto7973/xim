@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -152,7 +153,7 @@ namespace Xim.Simulators.Api
             if (ContentLength.HasValue)
                 sb.AppendFormat(CultureInfo.InvariantCulture, "Content-Length: {0}\n", ContentLength);
             if (sb.Length > 0 && Content != null)
-                sb.Append("\n");
+                sb.Append('\n');
             if (Content is Stream stream)
                 sb.Append(stream.ToString());
             else if (Content != null)
@@ -234,6 +235,37 @@ namespace Xim.Simulators.Api
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
+        }
+
+        internal static async Task CopyBytesAsync(Stream input, Stream output, long? length)
+        {
+            var bytesAvailable = length;
+            var bufferSize = 81920;
+
+            if (bytesAvailable.HasValue && bytesAvailable.Value < bufferSize)
+                bufferSize = (int)bytesAvailable.Value;
+
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try
+            {
+                int bytesRead;
+                while (bufferSize > 0 && (bytesRead = await input.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) != 0)
+                {
+                    await output
+                        .WriteAsync(buffer, 0, bytesRead)
+                        .ConfigureAwait(false);
+                    if (bytesAvailable.HasValue)
+                    {
+                        bytesAvailable = bytesAvailable.Value - bytesRead;
+                        if (bytesAvailable.Value < bufferSize)
+                            bufferSize = (int)bytesAvailable.Value;
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+            }
         }
 
         private class InternalStringStream : MemoryStream

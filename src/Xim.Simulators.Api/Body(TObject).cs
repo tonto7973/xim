@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -127,37 +126,6 @@ namespace Xim.Simulators.Api
                 namespaces.Add(string.Empty, string.Empty);
                 xmlSerializer.Serialize(xmlWriter, value, namespaces);
                 return memoryStream.ToArray();
-            }
-        }
-
-        private static async Task CopyBytesAsync(Stream input, Stream output, long? length)
-        {
-            var bytesAvailable = length;
-            var bufferSize = 81920;
-
-            if (bytesAvailable.HasValue && bytesAvailable.Value < bufferSize)
-                bufferSize = (int)bytesAvailable.Value;
-
-            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            try
-            {
-                int bytesRead;
-                while (bufferSize > 0 && (bytesRead = await input.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) != 0)
-                {
-                    await output
-                        .WriteAsync(buffer, 0, bytesRead)
-                        .ConfigureAwait(false);
-                    if (bytesAvailable.HasValue)
-                    {
-                        bytesAvailable = bytesAvailable.Value - bytesRead;
-                        if (bytesAvailable.Value < bufferSize)
-                            bufferSize = (int)bytesAvailable.Value;
-                    }
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
             }
         }
 
