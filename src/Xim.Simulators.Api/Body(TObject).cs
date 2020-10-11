@@ -118,15 +118,15 @@ namespace Xim.Simulators.Api
 
         private static byte[] SerializeXml<T>(T value, XmlWriterSettings xmlSettings, Encoding encoding)
         {
-            using (var ms = new MemoryStream())
-            using (var sr = new StreamWriter(ms, encoding))
-            using (var xmlWriter = XmlWriter.Create(sr, xmlSettings))
+            using (var memoryStream = new MemoryStream())
+            using (var streamWriter = new StreamWriter(memoryStream, encoding))
+            using (var xmlWriter = XmlWriter.Create(streamWriter, xmlSettings))
             {
                 var xmlSerializer = new XmlSerializer(typeof(T));
                 var namespaces = new XmlSerializerNamespaces();
                 namespaces.Add(string.Empty, string.Empty);
                 xmlSerializer.Serialize(xmlWriter, value, namespaces);
-                return ms.ToArray();
+                return memoryStream.ToArray();
             }
         }
 
@@ -197,9 +197,9 @@ namespace Xim.Simulators.Api
             }
             else
             {
-                using (var reader = new StreamReader(data, encoding))
+                using (var streamReader = new StreamReader(data, encoding))
                 {
-                    var json = reader.ReadToEnd();
+                    var json = streamReader.ReadToEnd();
                     var result = JsonSerializer.Deserialize<T>(json, options);
                     return new ValueTask<T>(result);
                 }
@@ -209,8 +209,8 @@ namespace Xim.Simulators.Api
         private static T DeserializeXml<T>(Stream data, XmlReaderSettings xmlSettings, Encoding encoding)
         {
             var xmlSerializer = new XmlSerializer(typeof(T));
-            using (var sr = new StreamReader(data, encoding ?? Encoding.UTF8))
-            using (var xmlReader = XmlReader.Create(sr, xmlSettings))
+            using (var streamReader = new StreamReader(data, encoding ?? Encoding.UTF8))
+            using (var xmlReader = XmlReader.Create(streamReader, xmlSettings))
             {
                 return (T)xmlSerializer.Deserialize(xmlReader);
             }

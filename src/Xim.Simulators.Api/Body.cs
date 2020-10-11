@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -140,6 +141,26 @@ namespace Xim.Simulators.Api
                 : ReadContentAs<TObject>(new DefaultHttpContext(), _settings);
 
         /// <summary>
+        /// Returns a string that represents the current <see cref="Body"/>.
+        /// </summary>
+        /// <returns>A string that represents the current <see cref="Body"/>.</returns>
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            if (ContentType != null)
+                sb.AppendFormat(CultureInfo.InvariantCulture, "Content-Type: {0}\n", ContentType);
+            if (ContentLength.HasValue)
+                sb.AppendFormat(CultureInfo.InvariantCulture, "Content-Length: {0}\n", ContentLength);
+            if (sb.Length > 0 && Content != null)
+                sb.Append("\n");
+            if (Content is Stream stream)
+                sb.Append(stream.ToString());
+            else if (Content != null)
+                sb.Append(ReadContentAsString(new DefaultHttpContext(), _settings));
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Releases all resources currently used by this <see cref="Body"/> instance.
         /// </summary>
         /// <param name="disposing"><c>true</c> if this method is being invoked by the <see cref="Dispose()"/> method,
@@ -166,8 +187,8 @@ namespace Xim.Simulators.Api
 
         private static Body<Stream> InternalFromString(string httpBody, Encoding encoding, string mediaType)
         {
-            var bytes = encoding.GetBytes(httpBody);
-            return new Body<Stream>(new MemoryStream(bytes), mediaType + "; charset=" + encoding.HeaderName, bytes.LongLength)
+            var stream = new InternalStringStream(httpBody, encoding);
+            return new Body<Stream>(stream, mediaType + "; charset=" + encoding.HeaderName, stream.Length)
             {
                 _ownsDisposable = true
             };
@@ -213,6 +234,20 @@ namespace Xim.Simulators.Api
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
+        }
+
+        private class InternalStringStream : MemoryStream
+        {
+            private readonly Encoding _encoding;
+
+            public InternalStringStream(string value, Encoding encoding)
+                : base(encoding.GetBytes(value))
+            {
+                _encoding = encoding;
+            }
+
+            public override string ToString()
+                => _encoding.GetString(ToArray());
         }
     }
 }

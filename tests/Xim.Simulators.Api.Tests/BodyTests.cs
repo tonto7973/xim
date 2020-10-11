@@ -395,6 +395,62 @@ namespace Xim.Simulators.Api.Tests
                 .Message.ShouldBe(SR.Format(SR.ApiResponseNotFormatted));
         }
 
+        [Test]
+        public void ToString_FormatsBody_WhenNoContentTypeAndLengthSet()
+        {
+            var content = new { Id = 1234 };
+            var expectedResult = JsonSerializer.Serialize(content, content.GetType(), new JsonSerializerOptions { WriteIndented = true });
+            var body = Body.FromObject(new { Id = 1234 });
+
+            var result = body.ToString();
+
+            result.ShouldBe(expectedResult);
+        }
+
+        [Test]
+        public void ToString_FormatsBodyWithContentType_WhenContentTypeSet()
+        {
+            var body = Body.FromString("1234", Encoding.ASCII, "text/ble");
+
+            var result = body.ToString();
+
+            result.ShouldBe("Content-Type: text/ble; charset=us-ascii\nContent-Length: 4\n\n1234");
+        }
+
+        [Test]
+        public void ReadAsStream_ReturnsStream_WhenBodyWrapsStream()
+        {
+            var stream = new MemoryStream();
+            var body = Body.FromStream(stream);
+
+            var result = body.ReadAsStream();
+
+            result.ShouldBeSameAs(stream);
+        }
+
+        [Test]
+        public void ReadAsStream_ReturnsMemoryStream_WhenBodyWrapsObject()
+        {
+            var obj = new { Id = 4 };
+            var body = Body.FromObject(obj);
+
+            var result = body.ReadAsStream();
+
+            var ms = result.ShouldBeOfType<MemoryStream>();
+            ms.Position.ShouldBe(0);
+            Encoding.ASCII.GetString(ms.ToArray()).ShouldBe("{\r\n  \"Id\": 4\r\n}");
+        }
+
+        [Test]
+        public void ReadAsStream_ReturnsInternalStringStream_WhenBodyWrapsString()
+        {
+            var body = Body.FromString("A body", Encoding.ASCII);
+
+            var result = body.ReadAsStream();
+
+            result.GetType().FullName.ShouldBe("Xim.Simulators.Api.Body+InternalStringStream");
+        }
+
         public class Bucket
         {
             public string Key { get; set; }
@@ -402,14 +458,14 @@ namespace Xim.Simulators.Api.Tests
             internal byte[] ToXml(XmlWriterSettings xmlSettings, Encoding encoding)
             {
                 var xmlSerializer = new XmlSerializer(typeof(Bucket));
-                using (var ms = new MemoryStream())
-                using (var sr = new StreamWriter(ms, encoding))
-                using (var xmlWriter = XmlWriter.Create(sr, xmlSettings))
+                using (var memoryStream = new MemoryStream())
+                using (var streamWriter = new StreamWriter(memoryStream, encoding))
+                using (var xmlWriter = XmlWriter.Create(streamWriter, xmlSettings))
                 {
                     var namespaces = new XmlSerializerNamespaces();
                     namespaces.Add(string.Empty, string.Empty);
                     xmlSerializer.Serialize(xmlWriter, this, namespaces);
-                    return ms.ToArray();
+                    return memoryStream.ToArray();
                 }
             }
         }
