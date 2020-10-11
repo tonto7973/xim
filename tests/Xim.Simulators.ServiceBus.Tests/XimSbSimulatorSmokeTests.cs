@@ -10,6 +10,7 @@ using NUnit.Framework;
 using Shouldly;
 using Xim.Simulators.ServiceBus.Delivering;
 using Xim.Simulators.ServiceBus.Entities;
+using Xim.Tests.Setup;
 
 namespace Xim.Simulators.ServiceBus.Tests
 {
@@ -20,10 +21,6 @@ namespace Xim.Simulators.ServiceBus.Tests
         public async Task TestAzureServiceBusQueueReceive()
         {
             X509Certificate2 testCertificate = TestCertificate.Find();
-            if (testCertificate == null)
-            {
-                Assert.Inconclusive("The test SSL certificate is not available.");
-            }
 
             using ISimulation simulation = Simulation.Create();
             const string queueName = "sb-queue-x";

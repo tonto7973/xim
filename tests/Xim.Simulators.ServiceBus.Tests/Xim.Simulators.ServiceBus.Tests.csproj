@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Xim.Simulators.ServiceBus\Xim.Simulators.ServiceBus.csproj" />
     <ProjectReference Include="..\..\src\Xim\Xim.csproj" />
+    <ProjectReference Include="..\..\tools\Xim.Tests.Setup\Xim.Tests.Setup.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
-using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
-using Xim.Tests.Setup.Cng;
+using NUnit.Framework;
+using Xim.Tests.Setup.Utils;
 
 namespace Xim.Tests.Setup
 {
@@ -13,6 +14,64 @@ namespace Xim.Tests.Setup
         private const string CertificateName = "Xim Test Certificate";
         private const string CertificatePass = "Xim";
         private const string OidServerAuthentication = "1.3.6.1.5.5.7.3.1";
+
+        public static X509Certificate2 Find()
+        {
+            X509Certificate2 certificate = Find(StoreName.My);
+            if (certificate == null)
+            {
+                Assert.Inconclusive("The test SSL certificate is not available. Please run Xim.Test.Setup to install the certificate.");
+            }
+            return certificate;
+        }
+
+        internal static X509Certificate2 Install()
+        {
+            X509Certificate2 certificate = Create();
+            Console.WriteLine("Adding certificate to user store");
+            Register(certificate, StoreName.My, SetupPrivateKeyAccess);
+            Console.WriteLine("Adding certificate to ca root store");
+            Register(certificate, StoreName.Root);
+            Console.WriteLine("Certificate registered");
+            return certificate;
+        }
+
+        internal static X509Certificate2 Prepare(string[] args)
+        {
+            const string installArgument = "--install-certificate";
+
+            if (args?.FirstOrDefault() == installArgument)
+            {
+                AdminUtils.RewireConsoleOut<Program>();
+                return Install();
+            }
+
+            Console.Write("Preparing certificate ... ");
+
+            X509Certificate2 testCertificate = Find(StoreName.My);
+            if (testCertificate != null)
+            {
+                Console.WriteLine("Found");
+                return testCertificate;
+            }
+
+            Console.WriteLine("Missing");
+            Console.WriteLine();
+            Console.WriteLine("Installing certificate ... ");
+            if (AdminUtils.IsAdministrator())
+            {
+                testCertificate = Install();
+                Console.WriteLine("Done.");
+            }
+            else
+            {
+                AdminUtils.RunAsAdministrator<Program>(installArgument);
+                testCertificate = Find(StoreName.My);
+                Console.WriteLine(testCertificate != null ? "Done." : "Failed.");
+            }
+
+            return testCertificate;
+        }
 
         private static X509Certificate2 Create()
         {
@@ -25,90 +84,48 @@ namespace Xim.Tests.Setup
 
             var distinguishedName = new X500DistinguishedName($"CN={CertificateName}");
 
-            using (var rsa = RSA.Create(2048))
-            {
-                var request = new CertificateRequest(distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest(distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
-                request.CertificateExtensions.Add(
-                    new X509KeyUsageExtension(X509KeyUsageFlags.DataEncipherment | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, false));
+            request.CertificateExtensions.Add(
+                new X509KeyUsageExtension(X509KeyUsageFlags.DataEncipherment | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, false));
 
-                request.CertificateExtensions.Add(
-                   new X509EnhancedKeyUsageExtension(
-                       new OidCollection { new Oid(OidServerAuthentication) }, false));
+            request.CertificateExtensions.Add(
+               new X509EnhancedKeyUsageExtension(
+                   new OidCollection { new Oid(OidServerAuthentication) }, false));
 
-                request.CertificateExtensions.Add(sanBuilder.Build());
+            request.CertificateExtensions.Add(sanBuilder.Build());
 
-                var certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddYears(100)));
-                certificate.FriendlyName = CertificateName;
+            X509Certificate2 certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddYears(100)));
+            certificate.FriendlyName = CertificateName;
 
-                return new X509Certificate2(certificate.Export(X509ContentType.Pfx, CertificatePass), CertificatePass, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-            }
+            return new X509Certificate2(certificate.Export(X509ContentType.Pfx, CertificatePass), CertificatePass, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
         }
 
         private static void Register(X509Certificate2 certificate, StoreName storeName, Func<X509Certificate2, X509Certificate2> onAdd = null)
         {
-            using (var store = new X509Store(storeName, StoreLocation.LocalMachine))
+            using var store = new X509Store(storeName, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadWrite);
+            try
             {
-                store.Open(OpenFlags.ReadWrite);
-                try
-                {
-                    store.Add(certificate);
-                    onAdd?.Invoke(certificate);
-                }
-                finally
-                {
-                    store.Close();
-                }
+                store.Add(certificate);
+                onAdd?.Invoke(certificate);
             }
-        }
-
-        public static void SafeRegister()
-        {
-            if (Find(StoreName.My) == null)
+            finally
             {
-                Register();
+                store.Close();
             }
-            else
-            {
-                Console.WriteLine("Certificate already registered");
-            }
-        }
-
-        public static X509Certificate2 Register()
-        {
-            var certificate = Create();
-            Console.WriteLine("Adding certificate to user store");
-            Register(certificate, StoreName.My, SetupPrivateKeyAccess);
-            Console.WriteLine("Adding certificate to ca root store");
-            Register(certificate, StoreName.Root);
-            Console.WriteLine("Certificate registered");
-            return certificate;
         }
 
         private static X509Certificate2 SetupPrivateKeyAccess(X509Certificate2 certificate)
         {
             const string usersGroupName = "Users";
 
-            var sid = new NTAccount(usersGroupName).Translate(typeof(SecurityIdentifier));
+            IdentityReference sid = new NTAccount(usersGroupName).Translate(typeof(SecurityIdentifier));
 
             Console.WriteLine($"Adding certificate read access for {Environment.MachineName}\\{usersGroupName} ({sid})");
-            var privateKey = certificate.GetRSAPrivateKey();
-            if (privateKey is RSACryptoServiceProvider rsaCsp)
-            {
-                var cspParams = new CspParameters(rsaCsp.CspKeyContainerInfo.ProviderType, rsaCsp.CspKeyContainerInfo.ProviderName, rsaCsp.CspKeyContainerInfo.KeyContainerName)
-                {
-                    Flags = CspProviderFlags.UseExistingKey | CspProviderFlags.UseMachineKeyStore,
-                    CryptoKeySecurity = rsaCsp.CspKeyContainerInfo.CryptoKeySecurity
-                };
-
-                cspParams.CryptoKeySecurity.AddAccessRule(new CryptoKeyAccessRule(sid, CryptoKeyRights.GenericRead, AccessControlType.Allow));
-
-                using (new RSACryptoServiceProvider(cspParams))
-                {
-                    Console.WriteLine("Access granted (csp)");
-                }
-            }
-            else if (privateKey is RSACng rsaCng)
+            RSA privateKey = certificate.GetRSAPrivateKey();
+            if (privateKey is RSACng rsaCng)
             {
                 var uniqueKeyName = rsaCng.Key.UniqueName;
                 var keyFileName = CngUtils.GetContainerPath(uniqueKeyName);
@@ -125,24 +142,22 @@ namespace Xim.Tests.Setup
 
         private static X509Certificate2 Find(StoreName storeName)
         {
-            using (var store = new X509Store(storeName, StoreLocation.LocalMachine))
+            using var store = new X509Store(storeName, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.OpenExistingOnly);
+            try
             {
-                store.Open(OpenFlags.ReadWrite);
-                try
+                foreach (X509Certificate2 certificate in store.Certificates)
                 {
-                    foreach (var certificate in store.Certificates)
+                    if (CertificateName.Equals(certificate.FriendlyName))
                     {
-                        if (CertificateName.Equals(certificate.FriendlyName))
-                        {
-                            return certificate;
-                        }
+                        return certificate;
                     }
-                    return null;
                 }
-                finally
-                {
-                    store.Close();
-                }
+                return null;
+            }
+            finally
+            {
+                store.Close();
             }
         }
     }

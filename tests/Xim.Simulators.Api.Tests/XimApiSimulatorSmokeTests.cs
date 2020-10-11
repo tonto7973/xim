@@ -16,6 +16,7 @@ using Microsoft.Azure.Storage.Blob;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Shouldly;
+using Xim.Tests.Setup;
 
 namespace Xim.Simulators.Api.Tests
 {
@@ -142,10 +143,6 @@ namespace Xim.Simulators.Api.Tests
         public async Task TestAzureBlobStorageRestApiOverSsl()
         {
             X509Certificate2 testCertificate = TestCertificate.Find();
-            if (testCertificate == null)
-            {
-                Assert.Inconclusive("The test SSL certificate is not available.");
-            }
 
             using ISimulation simulation = Simulation.Create();
             const string bookContents = "title: Hello world!";

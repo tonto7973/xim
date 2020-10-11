@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
+using Xim.Tests.Setup;
 
 namespace Xim.Simulators.Api.Tests
 {
@@ -403,7 +404,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public async Task StartAsync_UsesCertificate_WhenSpecified()
         {
-            using X509Certificate2 certificate = TestCertificate.Find() ?? TestCertificate.Create();
+            using X509Certificate2 certificate = TestCertificate.Find();
             ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>()).SetCertificate(certificate);
             var apiSimulator = new ApiSimulator(apiBuilder);
 

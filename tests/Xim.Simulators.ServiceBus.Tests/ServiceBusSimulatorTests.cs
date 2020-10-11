@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
+using Xim.Tests.Setup;
 
 namespace Xim.Simulators.ServiceBus.Tests
 {
@@ -203,7 +204,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public async Task StartAsync_ReportsActiveLocation_WhenSecured()
         {
-            using X509Certificate2 certificate = TestCertificate.Find() ?? TestCertificate.Create();
+            using X509Certificate2 certificate = TestCertificate.Find();
             ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
                 .SetCertificate(certificate);
             var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
@@ -276,7 +277,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public async Task StartAsync_UsesDefaultSecurePort_WhenSecured()
         {
-            using X509Certificate2 certificate = TestCertificate.Find() ?? TestCertificate.Create();
+            using X509Certificate2 certificate = TestCertificate.Find();
             ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
                 .SetCertificate(certificate);
             var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
