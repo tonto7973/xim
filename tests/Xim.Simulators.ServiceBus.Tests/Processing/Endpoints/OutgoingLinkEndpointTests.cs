@@ -21,9 +21,9 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         public async Task OnFlow_StartsSendingMessagesAsynchronously()
         {
             var backingQueue = new BlockingCollection<Message>(new ConcurrentQueue<Message>());
-            var link = Construct.Uninitialized<ListenerLink>();
-            var flowContext = Construct.ForPrivate<FlowContext>(link, 1, new Fields());
-            var queue = Substitute.For<IDeliveryQueue>();
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            FlowContext flowContext = Construct.ForPrivate<FlowContext>(link, 1, new Fields());
+            IDeliveryQueue queue = Substitute.For<IDeliveryQueue>();
             queue.Dequeue(Arg.Any<CancellationToken>())
                  .Returns(ci => backingQueue.Take(ci.Arg<CancellationToken>()));
             var endpoint = new OutgoingLinkEndpoint(queue);
@@ -40,9 +40,9 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         [Test]
         public void OnFlow_CancelsPreviousTask_WhenCalledMultipleTimes()
         {
-            var link = Construct.Uninitialized<ListenerLink>();
-            var flowContext = Construct.ForPrivate<FlowContext>(link, 1, new Fields());
-            var queue = Substitute.For<IDeliveryQueue>();
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            FlowContext flowContext = Construct.ForPrivate<FlowContext>(link, 1, new Fields());
+            IDeliveryQueue queue = Substitute.For<IDeliveryQueue>();
             var endpoint = new OutgoingLinkEndpoint(queue);
 
             endpoint.OnFlow(flowContext);
@@ -53,7 +53,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         [Test]
         public void OnMessage_NotSupported()
         {
-            var queue = Substitute.For<IDeliveryQueue>();
+            IDeliveryQueue queue = Substitute.For<IDeliveryQueue>();
             var endpoint = new OutgoingLinkEndpoint(queue);
 
             Should.Throw<NotSupportedException>(() => endpoint.OnMessage(null));
@@ -63,9 +63,9 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         public void OnLinkClosed_CancelsSendingMessages()
         {
             var backingQueue = new BlockingCollection<Message>(new ConcurrentQueue<Message>());
-            var link = Construct.Uninitialized<ListenerLink>();
-            var flowContext = Construct.ForPrivate<FlowContext>(link, 1, new Fields());
-            var queue = Substitute.For<IDeliveryQueue>();
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            FlowContext flowContext = Construct.ForPrivate<FlowContext>(link, 1, new Fields());
+            IDeliveryQueue queue = Substitute.For<IDeliveryQueue>();
             queue.Dequeue(Arg.Any<CancellationToken>())
                  .Returns(ci => backingQueue.Take(ci.Arg<CancellationToken>()));
             var endpoint = new OutgoingLinkEndpoint(queue);
@@ -83,8 +83,8 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         {
             var message = new Message();
             message.InitializePrivateProperty("Delivery");
-            var queue = Substitute.For<IDeliveryQueue>();
-            var dispositionContext = Construct.ForPrivate<DispositionContext>(
+            IDeliveryQueue queue = Substitute.For<IDeliveryQueue>();
+            DispositionContext dispositionContext = Construct.ForPrivate<DispositionContext>(
                 Construct.Uninitialized<ListenerLink>(),
                 message,
                 new Accepted(),
@@ -108,17 +108,17 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
                     CorrelationId = "abc123"
                 }
             };
-            var fakeDeliveryQueue = Substitute.For<IDeliveryQueue>();
+            IDeliveryQueue fakeDeliveryQueue = Substitute.For<IDeliveryQueue>();
             fakeDeliveryQueue
                 .Dequeue(Arg.Any<CancellationToken>())
                 .Returns(message);
             var endpoint = new OutgoingLinkEndpoint(fakeDeliveryQueue);
-            var receiver = await TestAmqpHost.OpenAndLinkReceiverAsync(endpoint);
+            ReceiverLink receiver = await TestAmqpHost.OpenAndLinkReceiverAsync(endpoint);
             try
             {
                 receiver.SetCredit(1, CreditMode.Manual);
 
-                var receivedMessage = await receiver.ReceiveAsync();
+                Message receivedMessage = await receiver.ReceiveAsync();
 
                 receivedMessage.Properties.CorrelationId
                     .ShouldBe(message.Properties.CorrelationId);
@@ -139,17 +139,17 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
                     CorrelationId = "abc123"
                 }
             };
-            var fakeDeliveryQueue = Substitute.For<IDeliveryQueue>();
+            IDeliveryQueue fakeDeliveryQueue = Substitute.For<IDeliveryQueue>();
             fakeDeliveryQueue
                 .Dequeue(Arg.Any<CancellationToken>())
                 .Returns(message);
             var endpoint = new OutgoingLinkEndpoint(fakeDeliveryQueue);
-            var receiver = await TestAmqpHost.OpenAndLinkReceiverAsync(endpoint);
+            ReceiverLink receiver = await TestAmqpHost.OpenAndLinkReceiverAsync(endpoint);
             try
             {
                 receiver.SetCredit(1, CreditMode.Manual);
 
-                var receivedMessage = await receiver.ReceiveAsync();
+                Message receivedMessage = await receiver.ReceiveAsync();
                 receiver.Accept(receivedMessage);
 
                 receiver.SetCredit(1, CreditMode.Manual);

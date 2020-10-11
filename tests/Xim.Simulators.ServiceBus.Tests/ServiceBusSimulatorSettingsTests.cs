@@ -13,7 +13,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         public void Constructor_SetsLoggerProvider()
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             serviceBusBuilder.SetLoggerProvider(loggerProvider);
             var settings = new ServiceBusSimulatorSettings(serviceBusBuilder);
             settings.LoggerProvider.ShouldBeSameAs(loggerProvider);

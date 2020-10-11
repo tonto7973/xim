@@ -21,8 +21,8 @@ namespace Xim.Simulators.ServiceBus.Azure.Tests
         [Test]
         public void Handle_UpdatesDeliveryTag_WhenEventIdIsSendDeliveryAndContextIsIDelivery()
         {
-            var fakeDelivery = Substitute.For<IDelivery>();
-            var factory = typeof(Event).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            IDelivery fakeDelivery = Substitute.For<IDelivery>();
+            MethodInfo factory = typeof(Event).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             var evt = (Event)factory.Invoke(null, new object[] { EventId.SendDelivery, null, null, null, fakeDelivery });
 
             AzureHandler.Instance.Handle(evt);
@@ -33,9 +33,9 @@ namespace Xim.Simulators.ServiceBus.Azure.Tests
         [Test]
         public void Handle_DoesNotUpdateDeliveryTag_WhenEventIdIsNotSendDelivery()
         {
-            var fakeDelivery = Substitute.For<IDelivery>();
+            IDelivery fakeDelivery = Substitute.For<IDelivery>();
             fakeDelivery.Tag = null;
-            var factory = typeof(Event).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            MethodInfo factory = typeof(Event).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             var evt = (Event)factory.Invoke(null, new object[] { EventId.ReceiveDelivery, null, null, null, fakeDelivery });
 
             AzureHandler.Instance.Handle(evt);
@@ -46,7 +46,7 @@ namespace Xim.Simulators.ServiceBus.Azure.Tests
         [Test]
         public void Handle_DoesNotThrow_WhenContextIsNotIDelivery()
         {
-            var factory = typeof(Event).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            MethodInfo factory = typeof(Event).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             var evt = (Event)factory.Invoke(null, new object[] { EventId.SendDelivery, null, null, null, new Message() });
 
             Should.NotThrow(() => AzureHandler.Instance.Handle(evt));

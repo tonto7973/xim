@@ -34,7 +34,7 @@ namespace Xim.Simulators.Api.Internal
         {
             var context = new DefaultHttpContext();
 
-            var result = context.SetApiSimulatorSettings(new ApiSimulatorSettings());
+            HttpContext result = context.SetApiSimulatorSettings(new ApiSimulatorSettings());
 
             result.ShouldBeSameAs(context);
         }
@@ -44,7 +44,7 @@ namespace Xim.Simulators.Api.Internal
         {
             var context = new DefaultHttpContext();
 
-            var result = context.GetApiSimulatorSettings();
+            ApiSimulatorSettings result = context.GetApiSimulatorSettings();
 
             result.ShouldBeNull();
         }
@@ -56,7 +56,7 @@ namespace Xim.Simulators.Api.Internal
             var context = new DefaultHttpContext();
             context.SetApiSimulatorSettings(settings);
 
-            var result = context.GetApiSimulatorSettings();
+            ApiSimulatorSettings result = context.GetApiSimulatorSettings();
 
             result.ShouldBeSameAs(settings);
         }
@@ -64,7 +64,7 @@ namespace Xim.Simulators.Api.Internal
         [Test]
         public void SetApiSimulatorBodyEncoding_SetsEncodingToInstance()
         {
-            var encoding = Encoding.Unicode;
+            Encoding encoding = Encoding.Unicode;
             var context = new DefaultHttpContext();
 
             context.SetApiSimulatorBodyEncoding(encoding);
@@ -87,7 +87,7 @@ namespace Xim.Simulators.Api.Internal
         {
             var context = new DefaultHttpContext();
 
-            var result = context.SetApiSimulatorBodyEncoding(Encoding.ASCII);
+            HttpContext result = context.SetApiSimulatorBodyEncoding(Encoding.ASCII);
 
             result.ShouldBeSameAs(context);
         }
@@ -97,7 +97,7 @@ namespace Xim.Simulators.Api.Internal
         {
             var context = new DefaultHttpContext();
 
-            var result = context.GetApiSimulatorBodyEncoding();
+            Encoding result = context.GetApiSimulatorBodyEncoding();
 
             result.ShouldBeNull();
         }
@@ -105,11 +105,11 @@ namespace Xim.Simulators.Api.Internal
         [Test]
         public void GetApiSimulatorBodyEncoding_ReturnsTheSameInstance()
         {
-            var encoding = Encoding.UTF8;
+            Encoding encoding = Encoding.UTF8;
             var context = new DefaultHttpContext();
             context.SetApiSimulatorBodyEncoding(encoding);
 
-            var result = context.GetApiSimulatorBodyEncoding();
+            Encoding result = context.GetApiSimulatorBodyEncoding();
 
             result.ShouldBeSameAs(encoding);
         }

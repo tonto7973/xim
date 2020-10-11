@@ -50,8 +50,8 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
         [Test]
         public void Default_ReturnsTheSameInstance()
         {
-            var default1 = CbsTokenValidator.Default;
-            var default2 = CbsTokenValidator.Default;
+            CbsTokenValidator default1 = CbsTokenValidator.Default;
+            CbsTokenValidator default2 = CbsTokenValidator.Default;
 
             default1.ShouldBeSameAs(default2);
         }
@@ -78,7 +78,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenEmpty));
@@ -92,7 +92,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenNoSas, "SharedAccessSignature"));
@@ -106,7 +106,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenNoResource, "sr="));
@@ -120,7 +120,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenNoExpiry, "se="));
@@ -134,7 +134,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenNoKeyName, "skn="));
@@ -148,7 +148,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenNoSignature, "sig="));
@@ -162,7 +162,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenNameInvalid, "skn=meme"));
@@ -180,7 +180,7 @@ namespace Xim.Simulators.ServiceBus.Security.Tests
 
             Action action = () => validator.Validate(testToken);
 
-            var ex = action.ShouldThrow<ArgumentException>();
+            ArgumentException ex = action.ShouldThrow<ArgumentException>();
 
             ex.ParamName.ShouldBe("token");
             ex.Message.ShouldStartWith(SR.Format(SR.SbCbsTokenSignatureInvalid, "sig=fcfcb"));

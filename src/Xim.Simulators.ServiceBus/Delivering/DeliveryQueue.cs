@@ -30,7 +30,7 @@ namespace Xim.Simulators.ServiceBus.Delivering
             if (_disposed)
                 throw new ObjectDisposedException(typeof(DeliveryQueue).Name);
 
-            var delivery = _queue.Take(cancellationToken);
+            Delivery delivery = _queue.Take(cancellationToken);
 
             _delivery[delivery.Message] = delivery;
 
@@ -42,7 +42,7 @@ namespace Xim.Simulators.ServiceBus.Delivering
             if (_disposed)
                 throw new ObjectDisposedException(typeof(DeliveryQueue).Name);
 
-            if (_delivery.TryRemove(messageContext.Message, out var delivery))
+            if (_delivery.TryRemove(messageContext.Message, out Delivery delivery))
             {
                 delivery.Process(messageContext.DeliveryState);
             }

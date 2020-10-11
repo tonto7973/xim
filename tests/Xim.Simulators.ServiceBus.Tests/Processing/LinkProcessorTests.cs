@@ -21,12 +21,12 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string emptyLinkName = "";
             const string entity = "entity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             AmqpException exception = null;
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var sender = new SenderLink(session, emptyLinkName, entity);
@@ -54,13 +54,13 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string linkName = "abcd";
             const string entity = "entity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             securityContext.IsAuthorized(Arg.Any<Connection>()).Returns(false);
             AmqpException exception = null;
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var sender = new SenderLink(session, linkName, entity);
@@ -88,14 +88,14 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string linkName = "abcd";
             const string entity = "entity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             entityLookup.Find(Arg.Any<string>()).Returns((Entities.IEntity)null);
             securityContext.IsAuthorized(Arg.Any<Connection>()).Returns(true);
             AmqpException exception = null;
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var sender = new SenderLink(session, linkName, entity);
@@ -123,14 +123,14 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string linkName = "abcd";
             const string entity = "myEntity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
-            var fakeEntity = Substitute.For<Entities.IEntity>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
+            Entities.IEntity fakeEntity = Substitute.For<Entities.IEntity>();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             entityLookup.Find(entity).Returns(fakeEntity);
             securityContext.IsAuthorized(Arg.Any<Connection>()).Returns(true);
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var sender = new SenderLink(session, linkName, entity);
@@ -157,14 +157,14 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string linkName = "abcd";
             const string entity = "entity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             entityLookup.Find(Arg.Any<string>()).Returns((Entities.IEntity)null);
             securityContext.IsAuthorized(Arg.Any<Connection>()).Returns(true);
             AmqpException exception = null;
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var receiver = new ReceiverLink(session, linkName, entity);
@@ -188,16 +188,16 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string linkName = "abcd";
             const string entity = "entity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
-            var fakeEntity = Substitute.For<Entities.IEntity>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
+            Entities.IEntity fakeEntity = Substitute.For<Entities.IEntity>();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             fakeEntity.DeliveryQueue.Returns((DeliveryQueue)null);
             entityLookup.Find(Arg.Any<string>()).Returns(fakeEntity);
             securityContext.IsAuthorized(Arg.Any<Connection>()).Returns(true);
             AmqpException exception = null;
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var receiver = new ReceiverLink(session, linkName, entity);
@@ -221,22 +221,22 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         {
             const string linkName = "abcd";
             const string entity = "entity";
-            var securityContext = Substitute.For<ISecurityContext>();
-            var entityLookup = Substitute.For<IEntityLookup>();
-            var loggerProvider = Substitute.For<ILoggerProvider>();
-            var fakeEntity = Substitute.For<Entities.IEntity>();
+            ISecurityContext securityContext = Substitute.For<ISecurityContext>();
+            IEntityLookup entityLookup = Substitute.For<IEntityLookup>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
+            Entities.IEntity fakeEntity = Substitute.For<Entities.IEntity>();
             var deliveryQueue = new DeliveryQueue();
             var linkProcessor = new LinkProcessor(securityContext, entityLookup, loggerProvider);
             entityLookup.Find(Arg.Any<string>()).Returns(fakeEntity);
             securityContext.IsAuthorized(Arg.Any<Connection>()).Returns(true);
             fakeEntity.DeliveryQueue.Returns(deliveryQueue);
-            var session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
+            Session session = await TestAmqpHost.OpenAndLinkProcessorAsync(linkProcessor);
             try
             {
                 var receiver = new ReceiverLink(session, linkName, entity);
                 deliveryQueue.Enqueue(new Delivery(new Message { Properties = new Properties { MessageId = "msgid6746" } }));
 
-                var message = await receiver.ReceiveAsync();
+                Message message = await receiver.ReceiveAsync();
 
                 message.Properties.MessageId.ShouldBe("msgid6746");
             }

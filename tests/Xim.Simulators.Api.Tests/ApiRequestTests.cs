@@ -13,7 +13,7 @@ namespace Xim.Simulators.Api.Tests
         public void Constructor_SetsProperties()
         {
             var testBody = new MemoryStream();
-            var fakeHttpRequest = Substitute.For<HttpRequest>();
+            HttpRequest fakeHttpRequest = Substitute.For<HttpRequest>();
             fakeHttpRequest.Method.Returns("SEND");
             fakeHttpRequest.Path.Returns(new PathString("/path/to/somewhere"));
             fakeHttpRequest.QueryString.Returns(new QueryString("?val=43&name=aaa"));
@@ -36,7 +36,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Constructor_DoesNotSetHeaderAndBody_WhenHeaderAndBodyNull()
         {
-            var fakeHttpRequest = Substitute.For<HttpRequest>();
+            HttpRequest fakeHttpRequest = Substitute.For<HttpRequest>();
             fakeHttpRequest.Method.Returns("RECV");
             fakeHttpRequest.Path.Returns(new PathString("/a/bc"));
             fakeHttpRequest.Headers.Returns((IHeaderDictionary)null);
@@ -58,7 +58,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("TEG", "/", null)]
         public void ToString_FormatsMethodPathAndQuery(string method, string path, string query)
         {
-            var fakeHttpRequest = Substitute.For<HttpRequest>();
+            HttpRequest fakeHttpRequest = Substitute.For<HttpRequest>();
             fakeHttpRequest.Method.Returns(method);
             fakeHttpRequest.Path.Returns(new PathString(path));
             fakeHttpRequest.QueryString.Returns(new QueryString(query));

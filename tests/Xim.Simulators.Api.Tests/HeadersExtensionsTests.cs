@@ -30,7 +30,7 @@ namespace Xim.Simulators.Api.Tests
         {
             var headers = new Headers();
 
-            var result = headers.AddLocation(new Uri("https://location.com"));
+            Headers result = headers.AddLocation(new Uri("https://location.com"));
 
             result.ShouldBeSameAs(headers);
         }
@@ -50,7 +50,7 @@ namespace Xim.Simulators.Api.Tests
         public void AddLocation_AddsValidRelativeLocationHeader()
         {
             var headers = new Headers();
-            var uri = new Uri("https://location.com/somepath/local?q=32").MakeRelativeUri(new Uri("https://location.com/"));
+            Uri uri = new Uri("https://location.com/somepath/local?q=32").MakeRelativeUri(new Uri("https://location.com/"));
             var relativeUri = uri.GetComponents(UriComponents.SerializationInfoString,
                                                 UriFormat.UriEscaped);
 
@@ -74,7 +74,7 @@ namespace Xim.Simulators.Api.Tests
         {
             Action action = () => new Headers().AddWwwAuthenticate(challenge);
 
-            var exception = action.ShouldThrow<ArgumentException>();
+            ArgumentException exception = action.ShouldThrow<ArgumentException>();
             exception.ParamName.ShouldBe("challenge");
             exception.Message.ShouldStartWith(SR.Format(SR.ApiHeaderChallengeEmpty));
         }
@@ -95,7 +95,7 @@ namespace Xim.Simulators.Api.Tests
         {
             var headers = new Headers();
 
-            var result = headers.AddWwwAuthenticate("a");
+            Headers result = headers.AddWwwAuthenticate("a");
 
             result.ShouldBeSameAs(headers);
         }

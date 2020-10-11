@@ -17,7 +17,7 @@ namespace Xim.Simulators.Tests
         [TestCase(SimulatorState.Stopping, SimulatorState.Running)]
         public void SetState_Throws_WhenStateCannotTransition(SimulatorState from, SimulatorState to)
         {
-            var simulator = Substitute.ForPartsOf<TestSimulator>();
+            TestSimulator simulator = Substitute.ForPartsOf<TestSimulator>();
 
             while (simulator.State != from)
             {
@@ -37,7 +37,7 @@ namespace Xim.Simulators.Tests
         [TestCase(SimulatorState.Stopping, SimulatorState.Stopped)]
         public void SetState_DoesNotThrow_WhenStateCanTransition(SimulatorState from, SimulatorState to)
         {
-            var simulator = Substitute.ForPartsOf<TestSimulator>();
+            TestSimulator simulator = Substitute.ForPartsOf<TestSimulator>();
 
             while (simulator.State != from)
             {
@@ -53,7 +53,7 @@ namespace Xim.Simulators.Tests
         [TestCase(SimulatorState.Stopping)]
         public void SetState_DoesNotThrow_WhenStateDoesNotChange(SimulatorState state)
         {
-            var simulator = Substitute.ForPartsOf<TestSimulator>();
+            TestSimulator simulator = Substitute.ForPartsOf<TestSimulator>();
 
             while (simulator.State != state)
             {
@@ -74,7 +74,7 @@ namespace Xim.Simulators.Tests
         [TestCase(SimulatorState.Stopping, SimulatorState.Running)]
         public void TrySetState_ReturnsFalse_WhenStateCannotTransition(SimulatorState from, SimulatorState to)
         {
-            var simulator = Substitute.ForPartsOf<TestSimulator>();
+            TestSimulator simulator = Substitute.ForPartsOf<TestSimulator>();
 
             while (simulator.State != from)
             {
@@ -93,7 +93,7 @@ namespace Xim.Simulators.Tests
         [TestCase(SimulatorState.Stopping, SimulatorState.Stopped)]
         public void TrySetState_ReturnsTrue_WhenStateCannotTransition(SimulatorState from, SimulatorState to)
         {
-            var simulator = Substitute.ForPartsOf<TestSimulator>();
+            TestSimulator simulator = Substitute.ForPartsOf<TestSimulator>();
 
             while (simulator.State != from)
             {
@@ -109,7 +109,7 @@ namespace Xim.Simulators.Tests
         [TestCase(SimulatorState.Starting)]
         public void TrySetState_ReturnsTrue_WhenStateDoesNotChange(SimulatorState state)
         {
-            var simulator = Substitute.ForPartsOf<TestSimulator>();
+            TestSimulator simulator = Substitute.ForPartsOf<TestSimulator>();
 
             while (simulator.State != state)
             {

@@ -213,9 +213,9 @@ namespace Xim.Simulators.Api
 
         private string ReadContentAsString(HttpContext context, ApiSimulatorSettings settings)
         {
-            using (var body = ReadContentAsStream(context, settings))
+            using (MemoryStream body = ReadContentAsStream(context, settings))
             {
-                var encoding = context.GetApiSimulatorBodyEncoding() ?? Encoding.UTF8;
+                Encoding encoding = context.GetApiSimulatorBodyEncoding() ?? Encoding.UTF8;
                 return encoding.GetString(body.ToArray());
             }
         }
@@ -223,13 +223,13 @@ namespace Xim.Simulators.Api
         private TObject ReadContentAs<TObject>(DefaultHttpContext context, ApiSimulatorSettings settings)
         {
             settings = settings ?? new ApiSimulatorSettings();
-            var body = Content is Stream content
+            Stream body = Content is Stream content
                 ? content
                 : ReadContentAsStream(context, settings);
 
             context.Request.Body = body;
-            context.Request.ContentType = ContentType;
-            context.Request.ContentLength = ContentLength;
+            context.Request.ContentType = Content is Stream ? ContentType : (ContentType ?? context.Response.ContentType);
+            context.Request.ContentLength = Content is Stream ? ContentLength : (ContentLength ?? context.Response.ContentLength);
 
             return ReadAsync<TObject>(context, settings)
                 .ConfigureAwait(false)

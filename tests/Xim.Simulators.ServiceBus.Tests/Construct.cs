@@ -9,17 +9,17 @@ namespace Xim.Simulators.ServiceBus.Tests
     {
         public static T Uninitialized<T>()
         {
-            var type = typeof(T);
+            Type type = typeof(T);
             return (T)FormatterServices.GetUninitializedObject(type);
         }
 
         public static T InitializePrivateProperty<T>(this T instance, string name)
         {
-            var type = typeof(T);
-            var property = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Type type = typeof(T);
+            PropertyInfo property = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (property == null)
                 throw new NotSupportedException($"Property {type.Name}.{name} not available.");
-            var setter = property.GetSetMethod() ?? property.GetSetMethod(true);
+            MethodInfo setter = property.GetSetMethod() ?? property.GetSetMethod(true);
             if (setter == null)
                 throw new NotSupportedException($"Property {type.Name}.{name} does not support setter.");
             var value = FormatterServices.GetUninitializedObject(property.PropertyType);
@@ -32,10 +32,10 @@ namespace Xim.Simulators.ServiceBus.Tests
             if (args == null)
                 args = Array.Empty<object>();
 
-            var type = typeof(T);
-            var constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Type type = typeof(T);
+            ConstructorInfo[] constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-            var constructor = Array.Find(constructors, c => IsMatch(c.GetParameters(), args));
+            ConstructorInfo constructor = Array.Find(constructors, c => IsMatch(c.GetParameters(), args));
             if (constructor == null)
                 throw new NotSupportedException($"Constructor {type.Name}(...) not found.");
             return (T)constructor.Invoke(args);

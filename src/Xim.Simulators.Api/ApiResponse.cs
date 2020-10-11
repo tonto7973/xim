@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -73,7 +74,7 @@ namespace Xim.Simulators.Api
 
         private void WriteHeaders(HttpContext context)
         {
-            foreach (var header in Headers)
+            foreach (KeyValuePair<string, string> header in Headers)
             {
                 context.Response.Headers.Append(header.Key, header.Value);
             }

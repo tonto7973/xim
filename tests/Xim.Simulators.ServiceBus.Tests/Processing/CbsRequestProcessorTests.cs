@@ -17,7 +17,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void Constructor_CreatesValidLogger()
         {
-            var fakeLoggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider fakeLoggerProvider = Substitute.For<ILoggerProvider>();
 
             new CbsRequestProcessor(Substitute.For<ISecurityContext>(), fakeLoggerProvider, Substitute.For<ITokenValidator>());
 
@@ -39,7 +39,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
             const string testMessageId = "rekwest1025847";
             var processor = new CbsRequestProcessor(Substitute.For<ISecurityContext>(), Substitute.For<ILoggerProvider>(), Substitute.For<ITokenValidator>());
 
-            var responseProperties = await TestAmqpHost.ProcessCbsRequestAsync(testMessageId, processor);
+            IDictionary<string, object> responseProperties = await TestAmqpHost.ProcessCbsRequestAsync(testMessageId, processor);
 
             responseProperties.ShouldBe(new Dictionary<string, object>
             {
@@ -52,13 +52,13 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         public async Task Process_CompleteWith401Unathorized_WhenTokenValid()
         {
             const string testMessageId = "someErrorMessageId";
-            var fakeTokenValidator = Substitute.For<ITokenValidator>();
+            ITokenValidator fakeTokenValidator = Substitute.For<ITokenValidator>();
             fakeTokenValidator
                 .When(instance => instance.Validate(Arg.Any<string>()))
                 .Do(_ => throw new ArgumentException("Test"));
             var processor = new CbsRequestProcessor(Substitute.For<ISecurityContext>(), Substitute.For<ILoggerProvider>(), fakeTokenValidator);
 
-            var responseProperties = await TestAmqpHost.ProcessCbsRequestAsync(testMessageId, processor);
+            IDictionary<string, object> responseProperties = await TestAmqpHost.ProcessCbsRequestAsync(testMessageId, processor);
 
             responseProperties.ShouldBe(new Dictionary<string, object>
             {
@@ -70,8 +70,8 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public async Task Process_LogSuccess_WhenTokenValid()
         {
-            var fakeLogger = Substitute.For<ILogger>();
-            var fakeLoggerProvider = Substitute.For<ILoggerProvider>();
+            ILogger fakeLogger = Substitute.For<ILogger>();
+            ILoggerProvider fakeLoggerProvider = Substitute.For<ILoggerProvider>();
             fakeLoggerProvider.CreateLogger(Arg.Any<string>()).Returns(fakeLogger);
             var processor = new CbsRequestProcessor(Substitute.For<ISecurityContext>(), fakeLoggerProvider, Substitute.For<ITokenValidator>());
 
@@ -90,10 +90,10 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         public async Task Process_LogError_WhenTokenInvalid()
         {
             var testException = new ArgumentException("Test");
-            var fakeLogger = Substitute.For<ILogger>();
-            var fakeLoggerProvider = Substitute.For<ILoggerProvider>();
+            ILogger fakeLogger = Substitute.For<ILogger>();
+            ILoggerProvider fakeLoggerProvider = Substitute.For<ILoggerProvider>();
             fakeLoggerProvider.CreateLogger(Arg.Any<string>()).Returns(fakeLogger);
-            var fakeTokenValidator = Substitute.For<ITokenValidator>();
+            ITokenValidator fakeTokenValidator = Substitute.For<ITokenValidator>();
             fakeTokenValidator
                 .When(instance => instance.Validate(Arg.Any<string>()))
                 .Do(_ => throw testException);

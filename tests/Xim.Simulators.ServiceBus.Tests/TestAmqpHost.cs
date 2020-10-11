@@ -34,10 +34,10 @@ namespace Xim.Simulators.ServiceBus.Tests
 
         public static async Task<Connection> ConnectAndAttachAsync(this ContainerHost host, int nSessions = 1)
         {
-            var connection = await host.ConnectAsync();
+            Connection connection = await host.ConnectAsync();
             try
             {
-                var links = Enumerable
+                IEnumerable<SenderLink> links = Enumerable
                     .Range(1, nSessions)
                     .Select(i => new SenderLink(new Session(connection), "A" + i, "A" + i));
 
@@ -108,15 +108,15 @@ namespace Xim.Simulators.ServiceBus.Tests
         public static async Task<IDictionary<string, object>> ProcessCbsRequestAsync(string messageId, CbsRequestProcessor processor)
         {
             var responseProperties = new Dictionary<string, object>();
-            var host = Open();
+            ContainerHost host = Open();
             try
             {
                 host.RegisterRequestProcessor("$cbs", processor);
-                var connection = await host.ConnectAsync();
+                Connection connection = await host.ConnectAsync();
                 var session = new Session(connection);
                 try
                 {
-                    var response = await session.SendCbsRequestAsync(messageId);
+                    Message response = await session.SendCbsRequestAsync(messageId);
                     responseProperties["CorrelationId"] = response.Properties.CorrelationId;
                     responseProperties["status-code"] = response.ApplicationProperties["status-code"];
                 }
@@ -135,11 +135,11 @@ namespace Xim.Simulators.ServiceBus.Tests
 
         public static async Task<Message> ProcessManagementRequestAsync(Message message, ManagementRequestProcessor processor)
         {
-            var host = Open();
+            ContainerHost host = Open();
             try
             {
                 host.RegisterRequestProcessor("$management", processor);
-                var connection = await host.ConnectAsync();
+                Connection connection = await host.ConnectAsync();
                 var session = new Session(connection);
                 try
                 {
@@ -159,9 +159,9 @@ namespace Xim.Simulators.ServiceBus.Tests
 
         public static async Task<Session> OpenAndLinkProcessorAsync(ILinkProcessor linkProcessor)
         {
-            var host = Open();
+            ContainerHost host = Open();
             host.RegisterLinkProcessor(linkProcessor);
-            var connection = await host.ConnectAsync();
+            Connection connection = await host.ConnectAsync();
             var session = new Session(connection);
             session.AddClosedCallback((_, __) => host.Close());
             return session;
@@ -169,7 +169,7 @@ namespace Xim.Simulators.ServiceBus.Tests
 
         public static Task<Session> OpenAndLinkEndpointAsync(LinkEndpoint endpoint)
         {
-            var fakeLinkProcessor = Substitute.For<ILinkProcessor>();
+            ILinkProcessor fakeLinkProcessor = Substitute.For<ILinkProcessor>();
             fakeLinkProcessor
                 .When(instance => instance.Process(Arg.Any<AttachContext>()))
                 .Do(call => call.Arg<AttachContext>().Complete(endpoint, 3));
@@ -179,7 +179,7 @@ namespace Xim.Simulators.ServiceBus.Tests
 
         public static async Task<ReceiverLink> OpenAndLinkReceiverAsync(LinkEndpoint endpoint)
         {
-            var session = await OpenAndLinkEndpointAsync(endpoint);
+            Session session = await OpenAndLinkEndpointAsync(endpoint);
             return new ReceiverLink(session, "any", "abc/def");
         }
     }

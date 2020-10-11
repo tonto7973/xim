@@ -14,13 +14,13 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void Find_FindsTopicEntityCI()
         {
-            var topic = Substitute.For<ITopic, IEntity>();
+            ITopic topic = Substitute.For<ITopic, IEntity>();
             topic.Name.Returns("myTopic");
             var topics = new Dictionary<string, ITopic>
             {
                 [topic.Name] = topic
             };
-            var fakeSimulator = Substitute.For<IServiceBusSimulator>();
+            IServiceBusSimulator fakeSimulator = Substitute.For<IServiceBusSimulator>();
             fakeSimulator.Topics.Returns(topics);
             var lookup = new EntityLookup(fakeSimulator);
 
@@ -31,20 +31,20 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void Find_FindsSubscriptionsEntityCI()
         {
-            var subscription = Substitute.For<IQueue, IEntity>();
+            IQueue subscription = Substitute.For<IQueue, IEntity>();
             subscription.Name.Returns("sub");
             var subscriptions = new Dictionary<string, IQueue>
             {
                 [subscription.Name] = subscription
             };
-            var topic = Substitute.For<ITopic, IEntity>();
+            ITopic topic = Substitute.For<ITopic, IEntity>();
             topic.Name.Returns("T");
             topic.Subscriptions.Returns(subscriptions);
             var topics = new Dictionary<string, ITopic>
             {
                 [topic.Name] = topic
             };
-            var fakeSimulator = Substitute.For<IServiceBusSimulator>();
+            IServiceBusSimulator fakeSimulator = Substitute.For<IServiceBusSimulator>();
             fakeSimulator.Topics.Returns(topics);
             var lookup = new EntityLookup(fakeSimulator);
 
@@ -55,13 +55,13 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void Find_FindsQueueEntityCI()
         {
-            var queue = Substitute.For<IQueue, IEntity>();
+            IQueue queue = Substitute.For<IQueue, IEntity>();
             queue.Name.Returns("myQue");
             var queues = new Dictionary<string, IQueue>
             {
                 [queue.Name] = queue
             };
-            var fakeSimulator = Substitute.For<IServiceBusSimulator>();
+            IServiceBusSimulator fakeSimulator = Substitute.For<IServiceBusSimulator>();
             fakeSimulator.Queues.Returns(queues);
             var lookup = new EntityLookup(fakeSimulator);
 
@@ -72,26 +72,26 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void Find_FindsAllRegisteredEntities()
         {
-            var subscription = Substitute.For<IQueue, IEntity>();
+            IQueue subscription = Substitute.For<IQueue, IEntity>();
             subscription.Name.Returns("bar");
             var subscriptions = new Dictionary<string, IQueue>
             {
                 [subscription.Name] = subscription
             };
-            var topic = Substitute.For<ITopic, IEntity>();
+            ITopic topic = Substitute.For<ITopic, IEntity>();
             topic.Name.Returns("foo");
             topic.Subscriptions.Returns(subscriptions);
             var topics = new Dictionary<string, ITopic>
             {
                 [topic.Name] = topic
             };
-            var queue = Substitute.For<IQueue, IEntity>();
+            IQueue queue = Substitute.For<IQueue, IEntity>();
             queue.Name.Returns("qux");
             var queues = new Dictionary<string, IQueue>
             {
                 [queue.Name] = queue
             };
-            var fakeSimulator = Substitute.For<IServiceBusSimulator>();
+            IServiceBusSimulator fakeSimulator = Substitute.For<IServiceBusSimulator>();
             fakeSimulator.Topics.Returns(topics);
             fakeSimulator.Queues.Returns(queues);
             var lookup = new EntityLookup(fakeSimulator);
@@ -105,42 +105,42 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void GetEnumerator_ReturnsAllEntriesFromTopicAndSubscriptionsAndQueues([Values] bool genericEnumerator)
         {
-            var subscription1 = Substitute.For<IQueue, IEntity>();
+            IQueue subscription1 = Substitute.For<IQueue, IEntity>();
             subscription1.Name.Returns("sub1");
-            var subscription2 = Substitute.For<IQueue, IEntity>();
+            IQueue subscription2 = Substitute.For<IQueue, IEntity>();
             subscription2.Name.Returns("sub2");
             var subscriptions = new Dictionary<string, IQueue>
             {
                 [subscription1.Name] = subscription1,
                 [subscription2.Name] = subscription2
             };
-            var topic = Substitute.For<ITopic, IEntity>();
+            ITopic topic = Substitute.For<ITopic, IEntity>();
             topic.Name.Returns("topic");
             topic.Subscriptions.Returns(subscriptions);
             var topics = new Dictionary<string, ITopic>
             {
                 [topic.Name] = topic
             };
-            var queue = Substitute.For<IQueue, IEntity>();
+            IQueue queue = Substitute.For<IQueue, IEntity>();
             queue.Name.Returns("que");
             var queues = new Dictionary<string, IQueue>
             {
                 [queue.Name] = queue
             };
-            var fakeSimulator = Substitute.For<IServiceBusSimulator>();
+            IServiceBusSimulator fakeSimulator = Substitute.For<IServiceBusSimulator>();
             fakeSimulator.Topics.Returns(topics);
             fakeSimulator.Queues.Returns(queues);
             var lookup = new EntityLookup(fakeSimulator);
             var data = new Dictionary<string, IEntity>();
 
-            var enumerator = genericEnumerator
+            IEnumerator enumerator = genericEnumerator
                 ? lookup.GetEnumerator()
                 : ((IEnumerable)lookup).GetEnumerator();
             using (enumerator as IDisposable)
             {
                 while (enumerator.MoveNext())
                 {
-                    var (address, entity) = ((string, IEntity))enumerator.Current;
+                    (string address, IEntity entity) = ((string, IEntity))enumerator.Current;
                     data.Add(address, entity);
                 }
             }

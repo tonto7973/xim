@@ -109,7 +109,7 @@ namespace Xim.Simulators.Api.Routing
             writer.WriteString(Title);
             writer.WriteEndElement();
 
-            foreach (var item in Reasons)
+            foreach (KeyValuePair<string, string> item in Reasons)
             {
                 writer.WriteStartElement(XmlReasonElementName);
                 writer.WriteAttributeString(XmlReasonKeyAttribute, item.Key);

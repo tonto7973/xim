@@ -22,10 +22,10 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void SetLoggerProvider_SetsLoggerProvider()
         {
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.SetLoggerProvider(loggerProvider);
+            ServiceBusBuilder self = serviceBusBuilder.SetLoggerProvider(loggerProvider);
 
             serviceBusBuilder.LoggerProvider.ShouldBeSameAs(loggerProvider);
             self.ShouldBe(serviceBusBuilder);
@@ -36,7 +36,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.SetPort(1237);
+            ServiceBusBuilder self = serviceBusBuilder.SetPort(1237);
 
             serviceBusBuilder.Port.ShouldBe(1237);
             self.ShouldBe(serviceBusBuilder);
@@ -48,7 +48,7 @@ namespace Xim.Simulators.ServiceBus.Tests
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
             var cert = new X509Certificate2();
 
-            var self = serviceBusBuilder.SetCertificate(cert);
+            ServiceBusBuilder self = serviceBusBuilder.SetCertificate(cert);
 
             serviceBusBuilder.Certificate.ShouldBeSameAs(cert);
             self.ShouldBe(serviceBusBuilder);
@@ -70,7 +70,7 @@ namespace Xim.Simulators.ServiceBus.Tests
             var topic = new Topic("a", subscriptions);
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.AddTopic(topic);
+            ServiceBusBuilder self = serviceBusBuilder.AddTopic(topic);
 
             serviceBusBuilder.ShouldSatisfyAllConditions(
                 () => serviceBusBuilder.Topics.Count.ShouldBe(1),
@@ -87,7 +87,7 @@ namespace Xim.Simulators.ServiceBus.Tests
             serviceBusBuilder.AddTopic(new Topic("a"));
             serviceBusBuilder.AddTopic(new Topic("b"));
 
-            var exception = Should.Throw<ArgumentException>(() => serviceBusBuilder.AddTopic(new Topic("A")));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => serviceBusBuilder.AddTopic(new Topic("A")));
             exception.ParamName.ShouldBe("topic");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotUnique, "A"));
         }
@@ -99,7 +99,7 @@ namespace Xim.Simulators.ServiceBus.Tests
 
             serviceBusBuilder.AddQueue(new Queue("z"));
 
-            var exception = Should.Throw<ArgumentException>(() => serviceBusBuilder.AddTopic(new Topic("Z")));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => serviceBusBuilder.AddTopic(new Topic("Z")));
 
             exception.ParamName.ShouldBe("topic");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotUnique, "Z"));
@@ -112,7 +112,7 @@ namespace Xim.Simulators.ServiceBus.Tests
 
             serviceBusBuilder.AddQueue(new Queue("a/Subscriptions/b"));
 
-            var exception = Should.Throw<ArgumentException>(() => serviceBusBuilder.AddTopic(new Topic("A", new Subscription("b"))));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => serviceBusBuilder.AddTopic(new Topic("A", new Subscription("b"))));
             exception.ParamName.ShouldBe("topic");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotUnique, "A/Subscriptions/b"));
         }
@@ -132,7 +132,7 @@ namespace Xim.Simulators.ServiceBus.Tests
             var queue = new Queue("a");
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.AddQueue(queue);
+            ServiceBusBuilder self = serviceBusBuilder.AddQueue(queue);
 
             serviceBusBuilder.ShouldSatisfyAllConditions(
                 () => serviceBusBuilder.Queues.Count.ShouldBe(1),
@@ -178,7 +178,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void Build_AddsSimulatorToSimulation()
         {
-            var simulation = Substitute.For<ISimulation, IAddSimulator>();
+            ISimulation simulation = Substitute.For<ISimulation, IAddSimulator>();
             var serviceBusBuilder = new ServiceBusBuilder(simulation);
 
             ((IAddSimulator)simulation).Add(Arg.Any<ServiceBusSimulator>())

@@ -115,7 +115,7 @@ namespace Xim.Simulators.Api
 
             var headers = new Headers();
             var headerTokens = new StringTokenizer(httpHeaders, new[] { '\n' });
-            foreach (var headerToken in headerTokens)
+            foreach (StringSegment headerToken in headerTokens)
             {
                 var commaIndex = headerToken.IndexOf(':');
                 if (commaIndex >= 0)
@@ -140,7 +140,7 @@ namespace Xim.Simulators.Api
                 throw new ArgumentNullException(nameof(httpHeaders));
 
             var headers = new Headers();
-            foreach (var item in httpHeaders)
+            foreach (KeyValuePair<string, StringValues> item in httpHeaders)
             {
                 headers.Add(item.Key, item.Value);
             }
@@ -153,7 +153,7 @@ namespace Xim.Simulators.Api
                 throw new ArgumentNullException(nameof(name));
             if (name.Length == 0)
                 throw new ArgumentException(SR.Format(SR.ApiHeaderNameIsEmpty), nameof(name));
-            if (HeadersValidation.NameContainsInvalidChar(name, out var character))
+            if (HeadersValidation.NameContainsInvalidChar(name, out (char Char, int Index) character))
                 throw new ArgumentException(SR.Format(SR.ApiHeaderNameIsInvalid, ToLiteral(name), ToLiteral(character.Char), character.Index), nameof(name));
 
             return name;
@@ -163,7 +163,7 @@ namespace Xim.Simulators.Api
         {
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
-            if (HeadersValidation.ValueContainsInvalidChar(value, out var character))
+            if (HeadersValidation.ValueContainsInvalidChar(value, out (char Char, int Index) character))
                 throw new ArgumentException(SR.Format(SR.ApiHeaderValueIsInvalid, ToLiteral(value), ToLiteral(character.Char), character.Index), nameof(value));
 
             return value;

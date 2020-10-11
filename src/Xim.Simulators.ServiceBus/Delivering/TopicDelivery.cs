@@ -28,7 +28,7 @@ namespace Xim.Simulators.ServiceBus.Delivering
         {
             if (_disposed)
                 throw new ObjectDisposedException(typeof(TopicDelivery).Name);
-            var subscriptionTasks = Subscriptions
+            IEnumerable<Task<bool>> subscriptionTasks = Subscriptions
                 .Select(s => s.WaitAsync(timeout, cancellationToken));
             var results = await Task.WhenAll(subscriptionTasks).ConfigureAwait(false);
             return results.All(r => r);
@@ -39,7 +39,7 @@ namespace Xim.Simulators.ServiceBus.Delivering
             if (_disposed)
                 return;
             _disposed = true;
-            foreach (var subscription in Subscriptions)
+            foreach (IDelivery subscription in Subscriptions)
             {
                 (subscription as IDisposable)?.Dispose();
             }

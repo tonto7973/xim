@@ -19,6 +19,7 @@ namespace Xim.Simulators.Api
     {
         private const string JsonEncoding = "application/json";
         private const string XmlEncoding = "application/xml";
+        private const string AlternateXmlEncoding = "text/xml";
         private const string BinaryEncoding = "application/octet-stream";
 
         private readonly Encoding _encoding;
@@ -68,7 +69,7 @@ namespace Xim.Simulators.Api
 
         private Task WriteContentAsync(HttpContext context, ApiSimulatorSettings settings)
         {
-            var accepts = ((string)context.Request.Headers["Accept"] ?? "")
+            ILookup<string, bool> accepts = ((string)context.Request.Headers["Accept"] ?? "")
                 .Split(',')
                 .Where(accept => !string.IsNullOrWhiteSpace(accept))
                 .Select(accept => accept.Split(';')[0].Trim())
@@ -77,7 +78,8 @@ namespace Xim.Simulators.Api
 
             var acceptsAny = accepts["*/*"].Any();
             var acceptsJson = acceptsAny || accepts[JsonEncoding].Any();
-            var acceptsXml = acceptsAny || accepts[XmlEncoding].Any();
+            var acceptsTextXml = accepts[AlternateXmlEncoding].Any();
+            var acceptsXml = acceptsAny || accepts[XmlEncoding].Any() || acceptsTextXml;
 
             byte[] data;
             string contentType;
@@ -85,14 +87,14 @@ namespace Xim.Simulators.Api
 
             if (settings.XmlSettings != null && ((acceptsXml && !acceptsJson) || settings.JsonSettings == null))
             {
-                var xmlSettings = settings.XmlSettings;
-                contentType = XmlEncoding;
+                XmlWriterSettings xmlSettings = settings.XmlSettings;
+                contentType = !acceptsTextXml ? XmlEncoding : AlternateXmlEncoding;
                 charset = _encoding ?? xmlSettings.Encoding ?? Encoding.UTF8;
                 data = SerializeXml(Content, xmlSettings, charset);
             }
             else if (settings.JsonSettings != null)
             {
-                var jsonSettings = settings.JsonSettings;
+                JsonSerializerOptions jsonSettings = settings.JsonSettings;
                 contentType = JsonEncoding;
                 charset = _encoding ?? Encoding.UTF8;
                 data = SerializeJson(Content, jsonSettings, charset);
@@ -131,22 +133,23 @@ namespace Xim.Simulators.Api
 
         private static async Task<T> ReadStreamAsync<T>(Stream body, HttpRequest request, ApiSimulatorSettings settings)
         {
-            if (request.ContentType?.Contains(JsonEncoding) == true)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    await CopyBytesAsync(body, ms, request.ContentLength).ConfigureAwait(false);
-                    var charset = request.HttpContext.GetApiSimulatorBodyEncoding() ?? request.GetCharset();
-                    return await DeserializeJsonAsync<T>(ms, settings.JsonSettings, charset).ConfigureAwait(false);
-                }
-            }
-            else if (request.ContentType?.Contains(XmlEncoding) == true)
+            if (request.GetMediaType() == JsonEncoding)
             {
                 using (var ms = new MemoryStream())
                 {
                     await CopyBytesAsync(body, ms, request.ContentLength).ConfigureAwait(false);
                     ms.Position = 0;
-                    var charset = request.HttpContext.GetApiSimulatorBodyEncoding() ?? request.GetCharset() ?? Encoding.UTF8;
+                    Encoding charset = request.HttpContext.GetApiSimulatorBodyEncoding() ?? request.GetCharset();
+                    return await DeserializeJsonAsync<T>(ms, settings.JsonSettings, charset).ConfigureAwait(false);
+                }
+            }
+            else if (new[] { XmlEncoding, AlternateXmlEncoding }.Contains(request.GetMediaType()))
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await CopyBytesAsync(body, ms, request.ContentLength).ConfigureAwait(false);
+                    ms.Position = 0;
+                    Encoding charset = request.HttpContext.GetApiSimulatorBodyEncoding() ?? request.GetCharset() ?? Encoding.UTF8;
                     return DeserializeXml<T>(ms, new XmlReaderSettings(), charset);
                 }
             }
@@ -168,7 +171,7 @@ namespace Xim.Simulators.Api
                 using (var streamReader = new StreamReader(data, encoding))
                 {
                     var json = streamReader.ReadToEnd();
-                    var result = JsonSerializer.Deserialize<T>(json, options);
+                    T result = JsonSerializer.Deserialize<T>(json, options);
                     return new ValueTask<T>(result);
                 }
             }

@@ -17,7 +17,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public void Constructor_CreatesValidLogger()
         {
-            var fakeLoggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider fakeLoggerProvider = Substitute.For<ILoggerProvider>();
 
             new ManagementRequestProcessor(fakeLoggerProvider);
 
@@ -38,7 +38,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
             var processor = new ManagementRequestProcessor(Substitute.For<ILoggerProvider>());
             var request = new Message();
 
-            var response = await TestAmqpHost.ProcessManagementRequestAsync(request, processor);
+            Message response = await TestAmqpHost.ProcessManagementRequestAsync(request, processor);
 
             response.ApplicationProperties["statusCode"].ShouldBe(200);
         }
@@ -47,8 +47,8 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [TestCase("com.microsoft:blah")]
         public async Task Process_LogsUnsupportedOperation(string operation)
         {
-            var fakeLogger = Substitute.For<ILogger>();
-            var fakeLoggerProvider = Substitute.For<ILoggerProvider>();
+            ILogger fakeLogger = Substitute.For<ILogger>();
+            ILoggerProvider fakeLoggerProvider = Substitute.For<ILoggerProvider>();
             fakeLoggerProvider.CreateLogger(Arg.Any<string>()).Returns(fakeLogger);
             var processor = new ManagementRequestProcessor(fakeLoggerProvider);
             var request = new Message
@@ -72,8 +72,8 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
         [Test]
         public async Task Process_ProcessesRenewLock()
         {
-            var fakeLogger = Substitute.For<ILogger>();
-            var fakeLoggerProvider = Substitute.For<ILoggerProvider>();
+            ILogger fakeLogger = Substitute.For<ILogger>();
+            ILoggerProvider fakeLoggerProvider = Substitute.For<ILoggerProvider>();
             fakeLoggerProvider.CreateLogger(Arg.Any<string>()).Returns(fakeLogger);
             var processor = new ManagementRequestProcessor(fakeLoggerProvider);
             var lockTokens = new Guid[] { Guid.NewGuid(), Guid.NewGuid() };
@@ -85,7 +85,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Tests
                 }
             };
 
-            var response = await TestAmqpHost.ProcessManagementRequestAsync(request, processor);
+            Message response = await TestAmqpHost.ProcessManagementRequestAsync(request, processor);
             var expirations = (response.Body as Map)?["expirations"] as DateTime[];
 
             response.ApplicationProperties["statusCode"].ShouldBe(200);

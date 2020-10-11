@@ -17,9 +17,9 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         {
             var message = new Message();
             message.InitializePrivateProperty("Delivery");
-            var link = Construct.Uninitialized<ListenerLink>();
-            var messageContext = Construct.ForPrivate<MessageContext>(link, message);
-            var entity = Substitute.For<IEntity>();
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            MessageContext messageContext = Construct.ForPrivate<MessageContext>(link, message);
+            IEntity entity = Substitute.For<IEntity>();
             var endpoint = new IncomingLinkEndpoint(entity);
 
             endpoint.OnMessage(messageContext);
@@ -35,9 +35,9 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints.Tests
         {
             var message = new Message();
             message.InitializePrivateProperty("Delivery");
-            var link = Construct.Uninitialized<ListenerLink>();
-            var messageContext = Construct.ForPrivate<MessageContext>(link, message);
-            var entity = Substitute.For<IEntity>();
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            MessageContext messageContext = Construct.ForPrivate<MessageContext>(link, message);
+            IEntity entity = Substitute.For<IEntity>();
             entity.When(instance => instance.Post(Arg.Any<Message>()))
                   .Do(_ => throw new NotSupportedException());
             var endpoint = new IncomingLinkEndpoint(entity);

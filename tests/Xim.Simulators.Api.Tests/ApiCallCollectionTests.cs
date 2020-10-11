@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;
@@ -32,12 +33,10 @@ namespace Xim.Simulators.Api.Tests
                 apiCall1,
                 apiCall2
             };
-            var allCalls = collection.ToList();
 
             collection.Count.ShouldBe(2);
-            allCalls.Count.ShouldBe(2);
-            allCalls[0].ShouldBeSameAs(apiCall1);
-            allCalls[1].ShouldBeSameAs(apiCall2);
+            collection[0].ShouldBeSameAs(apiCall1);
+            collection[1].ShouldBeSameAs(apiCall2);
         }
 
         [Test]
@@ -50,8 +49,8 @@ namespace Xim.Simulators.Api.Tests
                 ApiCall.Start("act2", new DefaultHttpContext())
             };
 
-            var enumeratorT = collection.GetEnumerator();
-            var enumerator = ((IEnumerable)collection).GetEnumerator();
+            IEnumerator<ApiCall> enumeratorT = collection.GetEnumerator();
+            IEnumerator enumerator = ((IEnumerable)collection).GetEnumerator();
 
             for (var i = 0; i < 3; i++)
             {

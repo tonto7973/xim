@@ -36,11 +36,11 @@ namespace Xim.Simulators.Api.Routing
 
         private bool IsBindableType(out string typeName)
         {
-            var type = typeof(T);
+            Type type = typeof(T);
             int expectedAttrsLength;
             if (type.FullName.StartsWith("System.ValueTuple`", StringComparison.InvariantCulture))
             {
-                var genericTypes = type.GetGenericArguments();
+                Type[] genericTypes = type.GetGenericArguments();
                 expectedAttrsLength = genericTypes.Length;
                 typeName = "(" + string.Join(",", genericTypes.Select(t => t.Name)) + ")";
             }
@@ -54,7 +54,7 @@ namespace Xim.Simulators.Api.Routing
         }
 
         private ApiHandler ToBaseHandler(ApiHandler<T> handler)
-            => context => Map(context, out var args, out var errors)
+            => context => Map(context, out T args, out Dictionary<string, string> errors)
                             ? handler(args, context)
                             : BadRequestHandler(errors);
 
@@ -70,7 +70,7 @@ namespace Xim.Simulators.Api.Routing
             errors = new Dictionary<string, string>();
 
             var matcher = new Regex("^" + Regex.Escape(Method) + " " + _localPathPattern + "$");
-            var match = matcher.Match($"{context.Request.Method} {context.Request.Path}");
+            Match match = matcher.Match($"{context.Request.Method} {context.Request.Path}");
 
             return match.Success && IsBindableMatch(match, errors, out value);
         }
@@ -78,14 +78,14 @@ namespace Xim.Simulators.Api.Routing
         protected override RouteOrder OnMatch(string action, string method, Uri uri)
         {
             var exactMatcher = new Regex("^" + Regex.Escape(Method) + " " + _localPathPattern + Regex.Escape(Uri.Query) + "$");
-            var exactMatch = exactMatcher.Match(action);
+            Match exactMatch = exactMatcher.Match(action);
             if (exactMatch.Success && IsBindableMatch(exactMatch, null, out _))
                 return RouteOrder.Action;
             else if (exactMatch.Success)
                 return RouteOrder.Route;
 
             var partialMatcher = new Regex("^" + Regex.Escape(Method) + " " + _localPathPattern + "$");
-            var partialMatch = partialMatcher.Match($"{method} {uri.LocalPath}");
+            Match partialMatch = partialMatcher.Match($"{method} {uri.LocalPath}");
             if (partialMatch.Success && IsBindableMatch(partialMatch, null, out _) && string.IsNullOrEmpty(Uri.Query))
                 return RouteOrder.ActionNoQuery;
             else if (partialMatch.Success)
@@ -125,10 +125,10 @@ namespace Xim.Simulators.Api.Routing
 
         private bool IsBindableTuple(Match match, IDictionary<string, string> errors, out T value)
         {
-            var type = typeof(T);
+            Type type = typeof(T);
             if (type.FullName.StartsWith("System.ValueTuple`", StringComparison.InvariantCulture))
             {
-                var genericTypes = type.GetGenericArguments();
+                Type[] genericTypes = type.GetGenericArguments();
                 var args = new object[genericTypes.Length];
                 var areAllGenericTypesBindable = (genericTypes.Length == _attrs.Length)
                     && match.Groups

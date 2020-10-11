@@ -22,8 +22,21 @@ namespace Xim.Simulators.Api.Internal
                     .Select(info => info.GetEncoding())
                     .FirstOrDefault(encoding => charset.Equals(encoding.HeaderName, StringComparison.OrdinalIgnoreCase));
             }
-            catch (Exception ex)
-            when (ex is ArgumentException || ex is FormatException)
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
+
+        internal static string GetMediaType(this HttpRequest request)
+        {
+            if (string.IsNullOrEmpty(request?.ContentType))
+                return null;
+            try
+            {
+                return new ContentType(request.ContentType).MediaType;
+            }
+            catch (FormatException)
             {
                 return null;
             }

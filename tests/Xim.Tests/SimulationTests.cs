@@ -14,7 +14,7 @@ namespace Xim.Tests
         [Test]
         public void Create_CreatesNewInstance()
         {
-            var simulation = Simulation.Create();
+            ISimulation simulation = Simulation.Create();
 
             simulation.ShouldNotBeNull();
         }
@@ -32,8 +32,8 @@ namespace Xim.Tests
         [Test]
         public void Add_AddsSimulator()
         {
-            var simulation = Simulation.Create();
-            var simulator = Substitute.For<ISimulator>();
+            ISimulation simulation = Simulation.Create();
+            ISimulator simulator = Substitute.For<ISimulator>();
 
             ((IAddSimulator)simulation).Add(simulator);
 
@@ -43,9 +43,9 @@ namespace Xim.Tests
         [Test]
         public async Task StopAll_StopsAllSimulators()
         {
-            var simulation = Simulation.Create();
-            var simulator1 = Substitute.For<ISimulator>();
-            var simulator2 = Substitute.For<ISimulator>();
+            ISimulation simulation = Simulation.Create();
+            ISimulator simulator1 = Substitute.For<ISimulator>();
+            ISimulator simulator2 = Substitute.For<ISimulator>();
             ((IAddSimulator)simulation).Add(simulator1);
             ((IAddSimulator)simulation).Add(simulator2);
 
@@ -62,7 +62,7 @@ namespace Xim.Tests
         {
             object simulator = Substitute.For<ISimulator, IDisposable>();
 
-            using (var simulation = Simulation.Create())
+            using (ISimulation simulation = Simulation.Create())
             {
                 ((IAddSimulator)simulation).Add((ISimulator)simulator);
             }
@@ -73,8 +73,8 @@ namespace Xim.Tests
         [Test]
         public void Dispose_DoesNotThrow_WhenSimulatorDoesNotImplementIDisposable()
         {
-            var simulator = Substitute.For<ISimulator>();
-            var simulation = Simulation.Create();
+            ISimulator simulator = Substitute.For<ISimulator>();
+            ISimulation simulation = Simulation.Create();
             ((IAddSimulator)simulation).Add(simulator);
 
             Action action = () => simulation.Dispose();
@@ -85,9 +85,9 @@ namespace Xim.Tests
         [Test]
         public void Dispose_DoesNotThrow_WhenSimulatorThrowsWhenStopping()
         {
-            var simulator = Substitute.For<ISimulator>();
+            ISimulator simulator = Substitute.For<ISimulator>();
             simulator.StopAsync().Returns(_ => Task.FromException(new ArgumentException("Task is null")));
-            var simulation = Simulation.Create();
+            ISimulation simulation = Simulation.Create();
             ((IAddSimulator)simulation).Add(simulator);
 
             Action action = () => simulation.Dispose();
@@ -99,7 +99,7 @@ namespace Xim.Tests
         public void Dispose_DisposesOnlyOnce()
         {
             object simulator = Substitute.For<ISimulator, IDisposable>();
-            var simulation = Simulation.Create();
+            ISimulation simulation = Simulation.Create();
             ((IAddSimulator)simulation).Add((ISimulator)simulator);
 
 #pragma warning disable S3966 // Objects should not be disposed more than once - required for unit test

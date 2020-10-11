@@ -24,7 +24,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [TestCase("a*bc")]
         public void Contructor_Throws_WhenNameInvalid(string invalidName)
         {
-            var exception = Should.Throw<ArgumentException>(() => new Topic(invalidName));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Topic(invalidName));
 
             exception.ParamName.ShouldBe("name");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotValid, RxValidName));
@@ -35,7 +35,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         {
             var invalidName = new string('x', 261);
 
-            var exception = Should.Throw<ArgumentException>(() => new Topic(invalidName));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Topic(invalidName));
 
             exception.ParamName.ShouldBe("name");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotValid, RxValidName));
@@ -56,7 +56,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [TestCase(0)]
         public void Constructor_SetsSubscriptionsInstance_WhenNoSubscriptions(int? set)
         {
-            var subs = set.HasValue ? new Subscription[set.Value] : null;
+            Subscription[] subs = set.HasValue ? new Subscription[set.Value] : null;
             var topic = new Topic("a", subs);
 
             topic.Subscriptions.ShouldNotBeNull();
@@ -79,7 +79,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void Constructor_Throws_WhenAnySubscriptionNull()
         {
-            var exception = Should.Throw<ArgumentException>(() => new Topic("a", new Subscription("x"), null));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Topic("a", new Subscription("x"), null));
 
             exception.ParamName.ShouldBe("subscriptions");
             exception.Message.ShouldStartWith(SR.Format(SR.SbTopicSubscriptionNull));
@@ -88,7 +88,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void Constructor_Throws_WhenSubscriptionsNotDistinctCaseInsensitive()
         {
-            var exception = Should.Throw<ArgumentException>(() => new Topic("a", new Subscription("x"), new Subscription("X")));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Topic("a", new Subscription("x"), new Subscription("X")));
 
             exception.ParamName.ShouldBe("subscriptions");
             exception.Message.ShouldStartWith(SR.Format(SR.SbTopicSubscriptionNotUnique, "X"));

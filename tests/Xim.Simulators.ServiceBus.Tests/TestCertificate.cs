@@ -35,7 +35,7 @@ namespace Xim.Simulators.ServiceBus.Tests
 
                 request.CertificateExtensions.Add(sanBuilder.Build());
 
-                var certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddYears(100)));
+                X509Certificate2 certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddYears(100)));
                 certificate.FriendlyName = CertificateName;
 
                 return new X509Certificate2(certificate.Export(X509ContentType.Pfx, CertificatePass), CertificatePass, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
@@ -49,7 +49,7 @@ namespace Xim.Simulators.ServiceBus.Tests
                 store.Open(OpenFlags.OpenExistingOnly);
                 try
                 {
-                    foreach (var certificate in store.Certificates)
+                    foreach (X509Certificate2 certificate in store.Certificates)
                     {
                         if (CertificateName.Equals(certificate.FriendlyName))
                             return certificate;

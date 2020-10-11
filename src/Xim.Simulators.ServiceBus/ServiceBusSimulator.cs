@@ -221,12 +221,12 @@ namespace Xim.Simulators.ServiceBus
 
             Abort();
 
-            foreach (var topic in Topics.Values.OfType<TopicEntity>())
+            foreach (TopicEntity topic in Topics.Values.OfType<TopicEntity>())
             {
                 topic.Dispose();
             }
 
-            foreach (var queue in Queues.Values.OfType<QueueEntity>())
+            foreach (QueueEntity queue in Queues.Values.OfType<QueueEntity>())
             {
                 queue.Dispose();
             }

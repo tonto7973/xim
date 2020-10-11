@@ -111,7 +111,7 @@ namespace Xim.Simulators.ServiceBus
             if (_entities.ContainsKey(topic.Name))
                 throw new ArgumentException(SR.Format(SR.SbEntityNameNotUnique, topic.Name), nameof(topic));
             Action addEntities = () => _entities[topic.Name] = true;
-            foreach (var subscription in topic.Subscriptions)
+            foreach (Subscription subscription in topic.Subscriptions)
             {
                 var subName = $"{topic.Name}/Subscriptions/{subscription.Name}";
                 if (_entities.ContainsKey(subName))

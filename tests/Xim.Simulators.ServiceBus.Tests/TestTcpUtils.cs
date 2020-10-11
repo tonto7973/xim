@@ -26,7 +26,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         {
             const string host = "localhost";
             var addresses = new List<IPAddress>();
-            if (IPAddress.TryParse(host, out var ipAddress))
+            if (IPAddress.TryParse(host, out IPAddress ipAddress))
             {
                 addresses.Add(ipAddress);
             }
@@ -54,10 +54,10 @@ namespace Xim.Simulators.ServiceBus.Tests
                 sockets[i].Listen(1);
             }
 
-            var stub = Substitute.For<IDisposable>();
+            IDisposable stub = Substitute.For<IDisposable>();
             stub.When(x => x.Dispose()).Do(_ =>
             {
-                foreach (var socket in sockets)
+                foreach (Socket socket in sockets)
                 {
                     socket.Dispose();
                 }

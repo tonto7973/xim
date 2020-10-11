@@ -22,44 +22,42 @@ namespace Xim.Simulators.Api.Tests
 
             var distinguishedName = new X500DistinguishedName($"CN={CertificateName}");
 
-            using (var rsa = RSA.Create(2048))
-            {
-                var request = new CertificateRequest(distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest(distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
-                request.CertificateExtensions.Add(
-                    new X509KeyUsageExtension(X509KeyUsageFlags.DataEncipherment | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, false));
+            request.CertificateExtensions.Add(
+                new X509KeyUsageExtension(X509KeyUsageFlags.DataEncipherment | X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, false));
 
-                request.CertificateExtensions.Add(
-                   new X509EnhancedKeyUsageExtension(
-                       new OidCollection { new Oid(OidServerAuthentication) }, false));
+            request.CertificateExtensions.Add(
+               new X509EnhancedKeyUsageExtension(
+                   new OidCollection { new Oid(OidServerAuthentication) }, false));
 
-                request.CertificateExtensions.Add(sanBuilder.Build());
+            request.CertificateExtensions.Add(sanBuilder.Build());
 
-                var certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddYears(100)));
-                certificate.FriendlyName = CertificateName;
+            X509Certificate2 certificate = request.CreateSelfSigned(new DateTimeOffset(DateTime.UtcNow.AddDays(-1)), new DateTimeOffset(DateTime.UtcNow.AddYears(100)));
+            certificate.FriendlyName = CertificateName;
 
-                return new X509Certificate2(certificate.Export(X509ContentType.Pfx, CertificatePass), CertificatePass, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
-            }
+            var certBytes = certificate.Export(X509ContentType.Pfx, CertificatePass);
+
+            return new X509Certificate2(certBytes, CertificatePass, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
         }
 
         public static X509Certificate2 Find()
         {
-            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+            using var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.OpenExistingOnly);
+            try
             {
-                store.Open(OpenFlags.OpenExistingOnly);
-                try
+                foreach (X509Certificate2 certificate in store.Certificates)
                 {
-                    foreach (var certificate in store.Certificates)
-                    {
-                        if (CertificateName.Equals(certificate.FriendlyName))
-                            return certificate;
-                    }
-                    return null;
+                    if (CertificateName.Equals(certificate.FriendlyName))
+                        return certificate;
                 }
-                finally
-                {
-                    store.Close();
-                }
+                return null;
+            }
+            finally
+            {
+                store.Close();
             }
         }
     }
