@@ -80,7 +80,7 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
             var sw = new Stopwatch();
 
             sw.Start();
-            var task = delivery.WaitAsync(timeout);
+            Task<bool> task = delivery.WaitAsync(timeout);
             delivery.Process(new Rejected());
             var result = await task;
             sw.Stop();
@@ -96,7 +96,7 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         {
             var delivery = new Delivery(new Amqp.Message());
 
-            var task = delivery.WaitAsync(TimeSpan.FromSeconds(15));
+            Task<bool> task = delivery.WaitAsync(TimeSpan.FromSeconds(15));
             delivery.Process(new Rejected());
 
             Task.WhenAll(task, delivery.WaitAsync(TimeSpan.FromSeconds(15)))
@@ -146,10 +146,10 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         {
             var delay = TimeSpan.FromMilliseconds(10);
             var delivery = new Delivery(new Amqp.Message());
-            var task1 = Task
+            Task task1 = Task
                 .Delay(delay)
                 .ContinueWith(_ => delivery.Dispose());
-            var task2 = delivery.WaitAsync(TimeSpan.FromSeconds(2));
+            Task<bool> task2 = delivery.WaitAsync(TimeSpan.FromSeconds(2));
 
             await Task
                 .WhenAll(task1, task2)

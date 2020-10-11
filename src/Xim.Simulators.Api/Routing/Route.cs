@@ -99,7 +99,7 @@ namespace Xim.Simulators.Api.Routing
 
         internal IEnumerable<Route> AsEnumerable()
         {
-            var current = this;
+            Route current = this;
             do
             {
                 yield return current;

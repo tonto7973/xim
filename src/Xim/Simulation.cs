@@ -23,7 +23,7 @@ namespace Xim
 
         private IEnumerable<ISimulator> GetSimulators()
         {
-            foreach (var simulator in _simulators)
+            foreach (ISimulator simulator in _simulators)
                 yield return simulator;
         }
 
@@ -55,7 +55,7 @@ namespace Xim
             if (_disposed)
                 return;
 
-            foreach (var simulator in _simulators.OfType<IDisposable>())
+            foreach (IDisposable simulator in _simulators.OfType<IDisposable>())
             {
                 simulator.Dispose();
             }

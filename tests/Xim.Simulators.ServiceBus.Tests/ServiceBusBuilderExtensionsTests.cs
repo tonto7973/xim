@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
@@ -11,10 +12,10 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void AddServiceBus_CreatesNewInstanceOfServiceBusSimulator()
         {
-            var simulation = Substitute.For<ISimulation, IAddSimulator>();
+            ISimulation simulation = Substitute.For<ISimulation, IAddSimulator>();
 
-            var serviceBusBuilder1 = simulation.AddServiceBus();
-            var serviceBusBuilder2 = simulation.AddServiceBus();
+            ServiceBusBuilder serviceBusBuilder1 = simulation.AddServiceBus();
+            ServiceBusBuilder serviceBusBuilder2 = simulation.AddServiceBus();
 
             serviceBusBuilder1.Build();
             serviceBusBuilder2.Build();
@@ -28,11 +29,22 @@ namespace Xim.Simulators.ServiceBus.Tests
         }
 
         [Test]
+        public void AddTopic_Throws_WhenServiceBusBuilderNull()
+        {
+            ServiceBusBuilder serviceBusBuilder = null;
+
+            Action action = () => serviceBusBuilder.AddTopic("foo", "bar");
+
+            action.ShouldThrow<ArgumentNullException>()
+                .ParamName.ShouldBe("serviceBusBuilder");
+        }
+
+        [Test]
         public void AddTopic_AddsTopicToBuilder()
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.AddTopic("a");
+            ServiceBusBuilder self = serviceBusBuilder.AddTopic("a");
 
             serviceBusBuilder.ShouldSatisfyAllConditions(
                 () => serviceBusBuilder.Topics[0].Name.ShouldBe("a"),
@@ -46,7 +58,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.AddTopic(topicName, subs);
+            ServiceBusBuilder self = serviceBusBuilder.AddTopic(topicName, subs);
 
             serviceBusBuilder.ShouldSatisfyAllConditions(
                 () => serviceBusBuilder.Topics[0].Name.ShouldBe(topicName),
@@ -56,13 +68,24 @@ namespace Xim.Simulators.ServiceBus.Tests
             );
         }
 
+        [Test]
+        public void AddQueue_Throws_WhenServiceBusBuilderNull()
+        {
+            ServiceBusBuilder serviceBusBuilder = null;
+
+            Action action = () => serviceBusBuilder.AddQueue("foo");
+
+            action.ShouldThrow<ArgumentNullException>()
+                .ParamName.ShouldBe("serviceBusBuilder");
+        }
+
         [TestCase("abe")]
         [TestCase("zxv")]
         public void AddQueue_AddsQueueToBuilder(string queueName)
         {
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
 
-            var self = serviceBusBuilder.AddQueue(queueName);
+            ServiceBusBuilder self = serviceBusBuilder.AddQueue(queueName);
 
             serviceBusBuilder.ShouldSatisfyAllConditions(
                 () => serviceBusBuilder.Queues[0].Name.ShouldBe(queueName),

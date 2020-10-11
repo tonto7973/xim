@@ -19,7 +19,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DisposesStreamContent()
         {
-            var value = Substitute.For<MemoryStream>();
+            MemoryStream value = Substitute.For<MemoryStream>();
             var body = Body.FromStream(value);
 
             body.Dispose();
@@ -30,7 +30,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DoesNotDisposesStreamContent_WhenLeaveOpenIsTrue()
         {
-            var value = Substitute.For<MemoryStream>();
+            MemoryStream value = Substitute.For<MemoryStream>();
             var body = Body.FromStream(value, leaveOpen: true);
 
             body.Dispose();
@@ -41,7 +41,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DisposesStreamContentOnlyOnce_WhenCalledMultipleTimes()
         {
-            var value = Substitute.For<MemoryStream>();
+            MemoryStream value = Substitute.For<MemoryStream>();
             var body = Body.FromStream(value);
 
 #pragma warning disable S3966 // Objects should not be disposed more than once - required for unit test
@@ -155,6 +155,24 @@ namespace Xim.Simulators.Api.Tests
         }
 
         [Test]
+        public async Task FromStream_WritesValidContentLength_WhenContentLengthSet([Values(4, 12, 22)] long length)
+        {
+            var context = new DefaultHttpContext();
+            var responseStream = new MemoryStream();
+            var settings = new ApiSimulatorSettings(new ApiBuilder(Substitute.For<ISimulation>()));
+            var bytes = Encoding.UTF8.GetBytes("Hello world!");
+            var body = Body.FromStream(new MemoryStream(bytes), "test/abc", length);
+            var expectedLength = Math.Min(length, bytes.Length);
+            context.Response.Body = responseStream;
+
+            await body.InternalWriteAsync(context, settings);
+
+            context.Response.ContentType.ShouldBe("test/abc");
+            context.Response.ContentLength.ShouldBe(length);
+            responseStream.Length.ShouldBe(expectedLength);
+        }
+
+        [Test]
         public void FromObject_AcceptsNull()
         {
             Action action = () => Body.FromObject((string)null);
@@ -185,7 +203,7 @@ namespace Xim.Simulators.Api.Tests
                 context.Request.Headers["Accept"] = testAcceptHeader;
             }
             context.Response.Body = memoryStream;
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(new JsonSerializerOptions
                 {
                     WriteIndented = false,
@@ -210,7 +228,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("text/html, application/xhtml+xml, application/xml;q=0.9", "ascii")]
         public async Task FromObject_WriteAlwaysSerializesToJson_WhenXmlSettingsNotSet(string testAcceptHeader, string codepage)
         {
-            var encoding = codepage != null ? Encoding.GetEncoding(codepage) : null;
+            Encoding encoding = codepage != null ? Encoding.GetEncoding(codepage) : null;
             var testObject = new { FirstName = "Gústo" };
             var memoryStream = new MemoryStream();
             var context = new DefaultHttpContext();
@@ -220,7 +238,7 @@ namespace Xim.Simulators.Api.Tests
                 context.Request.Headers["Accept"] = testAcceptHeader;
             }
             context.Response.Body = memoryStream;
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(new JsonSerializerOptions
                 {
                     WriteIndented = false
@@ -246,7 +264,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("text/html, application/xhtml+xml, application/xml;q=0.9, application/json", "utf-16")]
         public async Task FromObject_WriteAlwaysSerializesToXml_WhenJsonSettingsNotSet(string testAcceptHeader, string codepage)
         {
-            var encoding = codepage != null ? Encoding.GetEncoding(codepage) : null;
+            Encoding encoding = codepage != null ? Encoding.GetEncoding(codepage) : null;
             var testObject = new Bucket { Key = "5437áe" };
             var memoryStream = new MemoryStream();
             var context = new DefaultHttpContext();
@@ -256,7 +274,7 @@ namespace Xim.Simulators.Api.Tests
                 context.Request.Headers["Accept"] = testAcceptHeader;
             }
             context.Response.Body = memoryStream;
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(null)
                 .SetXmlSettings(new XmlWriterSettings
                 {
@@ -282,7 +300,7 @@ namespace Xim.Simulators.Api.Tests
             var memoryStream = new MemoryStream();
             var context = new DefaultHttpContext();
             context.Response.Body = memoryStream;
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(null)
                 .SetXmlSettings(new XmlWriterSettings
                 {
@@ -311,7 +329,7 @@ namespace Xim.Simulators.Api.Tests
             var memoryStream = new MemoryStream();
             var context = new DefaultHttpContext();
             context.Response.Body = memoryStream;
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(new JsonSerializerOptions())
                 .SetXmlSettings(null);
             var settings = new ApiSimulatorSettings(apiBuilder);
@@ -341,7 +359,7 @@ namespace Xim.Simulators.Api.Tests
                 context.Request.Headers["Accept"] = testAcceptHeader;
             }
             context.Response.Body = memoryStream;
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(new JsonSerializerOptions())
                 .SetXmlSettings(new XmlWriterSettings
                 {
@@ -365,7 +383,7 @@ namespace Xim.Simulators.Api.Tests
         public void FromObject_WriteThrows_WhenNoFormatterSet()
         {
             var context = new DefaultHttpContext();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetJsonSettings(null)
                 .SetXmlSettings(null);
             var settings = new ApiSimulatorSettings(apiBuilder);
@@ -377,6 +395,161 @@ namespace Xim.Simulators.Api.Tests
                 .Message.ShouldBe(SR.Format(SR.ApiResponseNotFormatted));
         }
 
+        [Test]
+        public void ToString_FormatsBody_WhenNoContentTypeAndLengthSet()
+        {
+            var content = new { Id = 1234 };
+            var expectedResult = JsonSerializer.Serialize(content, content.GetType(), new JsonSerializerOptions { WriteIndented = true });
+            var body = Body.FromObject(new { Id = 1234 });
+
+            var result = body.ToString();
+
+            result.ShouldBe(expectedResult);
+        }
+
+        [Test]
+        public void ToString_FormatsBodyWithContentType_WhenContentTypeSet()
+        {
+            var body = Body.FromString("1234", Encoding.ASCII, "text/ble");
+
+            var result = body.ToString();
+
+            result.ShouldBe("Content-Type: text/ble; charset=us-ascii\nContent-Length: 4\n\n1234");
+        }
+
+        [Test]
+        public void ReadAsStream_ReturnsStream_WhenBodyWrapsStream()
+        {
+            var stream = new MemoryStream();
+            var body = Body.FromStream(stream);
+
+            Stream result = body.ReadAsStream();
+
+            result.ShouldBeSameAs(stream);
+        }
+
+        [Test]
+        public void ReadAsStream_ReturnsMemoryStream_WhenBodyWrapsObject()
+        {
+            var obj = new { Id = 4 };
+            var body = Body.FromObject(obj);
+
+            Stream result = body.ReadAsStream();
+
+            MemoryStream ms = result.ShouldBeOfType<MemoryStream>();
+            ms.Position.ShouldBe(0);
+            Encoding.ASCII.GetString(ms.ToArray()).ShouldBe("{\r\n  \"Id\": 4\r\n}");
+        }
+
+        [Test]
+        public void ReadAsStream_ReturnsInternalStringStream_WhenBodyWrapsString()
+        {
+            var body = Body.FromString("A body", Encoding.ASCII);
+
+            Stream result = body.ReadAsStream();
+
+            result.GetType().FullName.ShouldBe("Xim.Simulators.Api.Body+InternalStringStream");
+        }
+
+        [Test]
+        public void ReadAsString_ReturnsString_WhenBodyWrapsString()
+        {            
+            var body = Body.FromObject("B body");
+
+            var result = body.ReadAsString();
+
+            result.ShouldBe("B body");
+        }
+
+        [Test]
+        public void ReadAsString_ReturnsStreamContent_WhenBodyWrapsStream()
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("Stream datA"));
+            var body = Body.FromStream(stream);
+
+            var result = body.ReadAsString();
+
+            result.ShouldBe("Stream datA");
+        }
+
+        [Test]
+        public void ReadAsString_ReturnsJsonString_WhenBodyWrapsObject()
+        {
+            var obj = new { CaId = 12 };
+            var body = Body.FromObject(obj);
+
+            var result = body.ReadAsString();
+
+            result.ShouldBe("{\r\n  \"CaId\": 12\r\n}");
+        }
+
+        [Test]
+        public void ReadAs_ReturnsObject_WhenTypeIsTheSame()
+        {
+            var obj = new Bucket { Key = "Tes" };
+            var body = Body.FromObject(obj);
+
+            Bucket result = body.ReadAs<Bucket>();
+
+            result.ShouldBeSameAs(obj);
+        }
+
+        [Test]
+        public void ReadAs_ReturnsDeSerializedObject_WhenTypeIsNotTheSame()
+        {
+            var obj = new { Key = "TopTen" };
+            var body = Body.FromObject(obj);
+
+            Bucket result = body.ReadAs<Bucket>();
+
+            result.Key.ShouldBe(obj.Key);
+        }
+
+        [Test]
+        public void ReadAs_ReturnsDeserializedObject_WhenReadingUnboundedStreamAsJson()
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("{\"Key\":\"FooBar\"}"));
+            var body = Body.FromStream(stream, "application/json; charset="+Encoding.ASCII.HeaderName);
+
+            Bucket result = body.ReadAs<Bucket>();
+
+            result.Key.ShouldBe("FooBar");
+        }
+
+        [Test]
+        public void ReadAs_ReturnsDeserializedObject_WhenReadingBoundedStreamAsJson()
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("{\"Key\":\"FooBarX\"}."));
+            var body = Body.FromStream(stream, "application/json; charset=" + Encoding.ASCII.HeaderName, 17);
+
+            Bucket result = body.ReadAs<Bucket>();
+
+            result.Key.ShouldBe("FooBarX");
+        }
+
+        [Test]
+        public void ReadAs_ReturnsDeserializedObject_WhenReadingStream()
+        {
+            var stream = new MemoryStream(Encoding.UTF8.GetBytes("{\"Key\":\"booool\"}"));
+            var body = Body.FromStream(stream, "application/json");
+
+            Bucket result = body.ReadAs<Bucket>();
+
+            result.Key.ShouldBe("booool");
+        }
+
+        [TestCase("application/xml")]
+        [TestCase("text/xml")]
+        public void ReadAs_ReturnsDeserializedObject_WhenReadingStreamAsXml(string mediaType)
+        {
+            var stream = new MemoryStream(new Bucket { Key = "BazQuX" }.ToXml());
+            var body = Body.FromStream(stream, $"{mediaType}; charset=utf-8");
+
+            Bucket result = body.ReadAs<Bucket>();
+
+            result.Key.ShouldBe("BazQuX");
+        }
+
         public class Bucket
         {
             public string Key { get; set; }
@@ -384,15 +557,23 @@ namespace Xim.Simulators.Api.Tests
             internal byte[] ToXml(XmlWriterSettings xmlSettings, Encoding encoding)
             {
                 var xmlSerializer = new XmlSerializer(typeof(Bucket));
-                using (var ms = new MemoryStream())
-                using (var sr = new StreamWriter(ms, encoding))
-                using (var xmlWriter = XmlWriter.Create(sr, xmlSettings))
+                using var memoryStream = new MemoryStream();
+                using var streamWriter = new StreamWriter(memoryStream, encoding);
+                using var xmlWriter = XmlWriter.Create(streamWriter, xmlSettings);
+                var namespaces = new XmlSerializerNamespaces();
+                namespaces.Add(string.Empty, string.Empty);
+                xmlSerializer.Serialize(xmlWriter, this, namespaces);
+                return memoryStream.ToArray();
+            }
+
+            internal byte[] ToXml()
+            {
+                var settings = new XmlWriterSettings
                 {
-                    var namespaces = new XmlSerializerNamespaces();
-                    namespaces.Add(string.Empty, string.Empty);
-                    xmlSerializer.Serialize(xmlWriter, this, namespaces);
-                    return ms.ToArray();
-                }
+                    Indent = true,
+                    Encoding = Encoding.UTF8
+                };
+                return ToXml(settings, settings.Encoding);
             }
         }
     }

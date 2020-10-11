@@ -29,10 +29,10 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void SetLoggerProvider_SetsLoggerProvider()
         {
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
 
-            var self = apiBuilder.SetLoggerProvider(loggerProvider);
+            ApiBuilder self = apiBuilder.SetLoggerProvider(loggerProvider);
 
             apiBuilder.LoggerProvider.ShouldBeSameAs(loggerProvider);
             self.ShouldBe(apiBuilder);
@@ -43,7 +43,7 @@ namespace Xim.Simulators.Api.Tests
         {
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
 
-            var self = apiBuilder.SetPort(1234);
+            ApiBuilder self = apiBuilder.SetPort(1234);
 
             apiBuilder.Port.ShouldBe(1234);
             self.ShouldBe(apiBuilder);
@@ -54,7 +54,7 @@ namespace Xim.Simulators.Api.Tests
         {
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             var cert = new X509Certificate2();
-            var self = apiBuilder.SetCertificate(cert);
+            ApiBuilder self = apiBuilder.SetCertificate(cert);
 
             apiBuilder.Certificate.ShouldBeSameAs(cert);
             self.ShouldBe(apiBuilder);
@@ -77,7 +77,7 @@ namespace Xim.Simulators.Api.Tests
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             var jsonSettings = new JsonSerializerOptions();
 
-            var self = apiBuilder.SetJsonSettings(jsonSettings);
+            ApiBuilder self = apiBuilder.SetJsonSettings(jsonSettings);
 
             apiBuilder.JsonSettings.ShouldBeSameAs(jsonSettings);
             self.ShouldBeSameAs(apiBuilder);
@@ -101,7 +101,7 @@ namespace Xim.Simulators.Api.Tests
                 Indent = false
             };
 
-            var self = apiBuilder.SetXmlSettings(xmlSettings);
+            ApiBuilder self = apiBuilder.SetXmlSettings(xmlSettings);
 
             apiBuilder.XmlSettings.ShouldBeSameAs(xmlSettings);
             self.ShouldBeSameAs(apiBuilder);
@@ -126,7 +126,7 @@ namespace Xim.Simulators.Api.Tests
 
             Action action = () => apiBuilder.AddHandler(invalidAction, _ => null);
 
-            var exception = action.ShouldThrow<ArgumentException>();
+            ArgumentException exception = action.ShouldThrow<ArgumentException>();
             exception.ParamName.ShouldBe("action");
             exception.Message.ShouldStartWith(SR.Format(SR.ApiRouteInvalidAction, invalidAction));
         }
@@ -140,7 +140,7 @@ namespace Xim.Simulators.Api.Tests
 
             Action action = () => apiBuilder.AddHandler(invalidAction, _ => null);
 
-            var exception = action.ShouldThrow<ArgumentException>();
+            ArgumentException exception = action.ShouldThrow<ArgumentException>();
             exception.ParamName.ShouldBe("action");
             exception.Message.ShouldStartWith(SR.Format(SR.ApiRouteInvalidVerb, invalidHttpMethod));
         }
@@ -154,7 +154,7 @@ namespace Xim.Simulators.Api.Tests
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             ApiHandler handler = _ => null;
 
-            var self = apiBuilder.AddHandler(validAction, handler);
+            ApiBuilder self = apiBuilder.AddHandler(validAction, handler);
 
             apiBuilder.Handlers.Single().ShouldBe(handler);
             apiBuilder.Handlers[validAction].ShouldBe(handler);
@@ -171,7 +171,7 @@ namespace Xim.Simulators.Api.Tests
             httpContext.Request.Path = "/data/32";
             ApiHandler<int> handler = (_, __) => Task.FromResult(apiResponse);
 
-            var self = apiBuilder.AddHandler("PUT /data/{id}", handler);
+            ApiBuilder self = apiBuilder.AddHandler("PUT /data/{id}", handler);
 
             apiBuilder.Handlers.Single()(httpContext).Result.ShouldBeSameAs(apiResponse);
             apiBuilder.Handlers["PUT /data/{id}"].ShouldNotBeNull();
@@ -183,7 +183,7 @@ namespace Xim.Simulators.Api.Tests
         {
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
 
-            var self = apiBuilder.AddHandler("Get /", _ => null);
+            ApiBuilder self = apiBuilder.AddHandler("Get /", _ => null);
 
             self.Handlers["GET /"].ShouldNotBeNull();
             self.ShouldBeSameAs(apiBuilder);
@@ -192,7 +192,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Build_AddsSimulatorToSimulation()
         {
-            var simulation = Substitute.For<ISimulation, IAddSimulator>();
+            ISimulation simulation = Substitute.For<ISimulation, IAddSimulator>();
             var apiBuilder = new ApiBuilder(simulation);
 
             ((IAddSimulator)simulation).Add(Arg.Any<ApiSimulator>())
@@ -209,7 +209,7 @@ namespace Xim.Simulators.Api.Tests
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             ApiHandler defaultHandler = _ => null;
 
-            var self = apiBuilder.SetDefaultHandler(defaultHandler);
+            ApiBuilder self = apiBuilder.SetDefaultHandler(defaultHandler);
 
             apiBuilder.DefaultHandler.ShouldBeSameAs(defaultHandler);
             self.ShouldBeSameAs(apiBuilder);

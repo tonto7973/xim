@@ -17,7 +17,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("PUT", "/books/323")]
         public async Task InvokeAsync_LogsRequest(string method, string path)
         {
-            var logger = Substitute.For<ILogger>();
+            ILogger logger = Substitute.For<ILogger>();
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             var apiSettings = new ApiSimulatorSettings(apiBuilder);
             var context = new DefaultHttpContext();
@@ -39,7 +39,7 @@ namespace Xim.Simulators.Api.Tests
         public async Task InvokeAsync_InvokesApiCall()
         {
             ApiCall recordedApiCall = null;
-            var logger = Substitute.For<ILogger>();
+            ILogger logger = Substitute.For<ILogger>();
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             var apiSettings = new ApiSimulatorSettings(apiBuilder);
             var context = new DefaultHttpContext();
@@ -60,8 +60,8 @@ namespace Xim.Simulators.Api.Tests
         public async Task InvokeAsync_UsesDefaultHandler_WhenRegisteredHandlerNotFound()
         {
             var defaultHandlerCalled = false;
-            var logger = Substitute.For<ILogger>();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ILogger logger = Substitute.For<ILogger>();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetDefaultHandler(_ =>
                 {
                     defaultHandlerCalled = true;
@@ -84,8 +84,8 @@ namespace Xim.Simulators.Api.Tests
         public async Task InvokeAsync_UsesRegisteredHandler_WhenHandlerAvailable()
         {
             var handlerCalled = false;
-            var logger = Substitute.For<ILogger>();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ILogger logger = Substitute.For<ILogger>();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .AddHandler("GET /users/32", _ =>
                 {
                     handlerCalled = true;
@@ -107,8 +107,8 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public async Task InvokeAsync_Returns502_WhenHandlerReturnsNullResponse()
         {
-            var logger = Substitute.For<ILogger>();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ILogger logger = Substitute.For<ILogger>();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetDefaultHandler(null);
             var apiSettings = new ApiSimulatorSettings(apiBuilder);
             var context = new DefaultHttpContext();
@@ -127,8 +127,8 @@ namespace Xim.Simulators.Api.Tests
         public async Task InvokeAsync_LogsError_WhenHandlerThrowsError()
         {
             var exception = new InvalidOperationException();
-            var logger = Substitute.For<ILogger>();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ILogger logger = Substitute.For<ILogger>();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .AddHandler("GET /vals", _ => throw exception);
             var apiSettings = new ApiSimulatorSettings(apiBuilder);
             var context = new DefaultHttpContext();
@@ -150,8 +150,8 @@ namespace Xim.Simulators.Api.Tests
         {
             ApiCall recordedApiCall = null;
             var exception = new InvalidOperationException();
-            var logger = Substitute.For<ILogger>();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ILogger logger = Substitute.For<ILogger>();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .AddHandler("GET /vals", _ => throw exception);
             var apiSettings = new ApiSimulatorSettings(apiBuilder);
             var context = new DefaultHttpContext();
@@ -170,10 +170,10 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public async Task InvokeAsync_DisposesApiResponse()
         {
-            var body = Substitute.ForPartsOf<Body>("foo", "text/plain");
+            Body body = Substitute.ForPartsOf<Body>("foo", "text/plain", null);
             var response = new ApiResponse(202, body: body);
-            var logger = Substitute.For<ILogger>();
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ILogger logger = Substitute.For<ILogger>();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .AddHandler("PUT /test.ob", _ => Task.FromResult(response));
             var apiSettings = new ApiSimulatorSettings(apiBuilder);
             var context = new DefaultHttpContext();

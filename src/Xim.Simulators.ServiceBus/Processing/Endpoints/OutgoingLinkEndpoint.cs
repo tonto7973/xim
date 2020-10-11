@@ -25,7 +25,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints
             CancelFlowTask();
 
             _flowTask = new CancellationTokenSource();
-            var cancellationToken = _flowTask.Token;
+            CancellationToken cancellationToken = _flowTask.Token;
 
             Task.Run(() => SendMessages(flowContext, cancellationToken));
         }
@@ -37,7 +37,7 @@ namespace Xim.Simulators.ServiceBus.Processing.Endpoints
             {
                 try
                 {
-                    var message = _deliveryQueue.Dequeue(cancellationToken);
+                    Amqp.Message message = _deliveryQueue.Dequeue(cancellationToken);
                     flowContext.Link.SendMessage(message);
                 }
                 catch (OperationCanceledException e)

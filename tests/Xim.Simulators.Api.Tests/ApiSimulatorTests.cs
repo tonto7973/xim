@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
+using Xim.Tests.Setup;
 
 namespace Xim.Simulators.Api.Tests
 {
@@ -22,7 +23,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Constructor_SetsLoggerProviderFromApiBuilder()
         {
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             apiBuilder.SetLoggerProvider(loggerProvider);
             var apiSimulator = new ApiSimulator(apiBuilder);
@@ -102,7 +103,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DoesNotThrow_WhenCertificateNotSet()
         {
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .SetCertificate(null);
             var apiSimulator = new ApiSimulator(apiBuilder);
 
@@ -175,7 +176,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void StartAsync_Fails_WhenHostCannotBeBuilt()
         {
-            var fakeLogger = Substitute.For<ILoggerProvider>();
+            ILoggerProvider fakeLogger = Substitute.For<ILoggerProvider>();
             fakeLogger.CreateLogger(Arg.Any<string>()).Returns(_ => throw new NotSupportedException());
 
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
@@ -403,23 +404,21 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public async Task StartAsync_UsesCertificate_WhenSpecified()
         {
-            using (var certificate = TestCertificate.Create())
+            using X509Certificate2 certificate = TestCertificate.Find();
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>()).SetCertificate(certificate);
+            var apiSimulator = new ApiSimulator(apiBuilder);
+
+            await apiSimulator.StartAsync();
+            try
             {
-                var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>()).SetCertificate(certificate);
-                var apiSimulator = new ApiSimulator(apiBuilder);
-
-                await apiSimulator.StartAsync();
-                try
-                {
-                    apiSimulator.Location.ShouldStartWith("https://");
-                }
-                finally
-                {
-                    await apiSimulator.StopAsync();
-                }
-
-                certificate.Reset();
+                apiSimulator.Location.ShouldStartWith("https://");
             }
+            finally
+            {
+                await apiSimulator.StopAsync();
+            }
+
+            certificate.Reset();
         }
 
         [Test]
@@ -435,11 +434,9 @@ namespace Xim.Simulators.Api.Tests
 
                     var port = apiSimulator.Port;
 
-                    using (var httpClient = new HttpClient())
-                    {
-                        var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{port}/version");
-                        await httpClient.SendAsync(request);
-                    }
+                    using var httpClient = new HttpClient();
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{port}/version");
+                    await httpClient.SendAsync(request);
                 }
                 finally
                 {
@@ -452,7 +449,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public async Task ReceivedApiCalls_GetsAllRecordedApiCalls()
         {
-            var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
+            ApiBuilder apiBuilder = new ApiBuilder(Substitute.For<ISimulation>())
                 .AddHandler("GET /api/v2/books", _ => throw new Exception());
             var apiSimulator = new ApiSimulator(apiBuilder);
             try
@@ -460,31 +457,29 @@ namespace Xim.Simulators.Api.Tests
                 await apiSimulator.StartAsync();
                 var port = apiSimulator.Port;
 
-                using (var httpClient = new HttpClient())
+                using var httpClient = new HttpClient();
+                var task1 = Task.Run(async () =>
                 {
-                    var task1 = Task.Run(async () =>
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{port}/api/v2/books");
+                    await httpClient.SendAsync(request);
+                });
+                var task2 = Task.Run(async () =>
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Patch, $"http://localhost:{port}/api/v2/books/32")
                     {
-                        var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost:{port}/api/v2/books");
-                        await httpClient.SendAsync(request);
-                    });
-                    var task2 = Task.Run(async () =>
-                    {
-                        var request = new HttpRequestMessage(HttpMethod.Patch, $"http://localhost:{port}/api/v2/books/32")
-                        {
-                            Content = new StringContent("{\"title\":\"abc\"}", Encoding.UTF8, "application/json")
-                        };
-                        await httpClient.SendAsync(request);
-                    });
-                    await Task.WhenAll(task1, task2);
-                }
+                        Content = new StringContent("{\"title\":\"abc\"}", Encoding.UTF8, "application/json")
+                    };
+                    await httpClient.SendAsync(request);
+                });
+                await Task.WhenAll(task1, task2);
             }
             finally
             {
                 await apiSimulator.StopAsync();
             }
 
-            var apiCalls = apiSimulator.ReceivedApiCalls;
-            var getCall = apiCalls.FirstOrDefault(call => call.Action == "GET /api/v2/books");
+            System.Collections.Generic.IReadOnlyCollection<ApiCall> apiCalls = apiSimulator.ReceivedApiCalls;
+            ApiCall getCall = apiCalls.FirstOrDefault(call => call.Action == "GET /api/v2/books");
             apiCalls.ShouldSatisfyAllConditions(
                 () => getCall.ShouldNotBeNull(),
                 () => getCall.Exception.ShouldNotBeNull(),

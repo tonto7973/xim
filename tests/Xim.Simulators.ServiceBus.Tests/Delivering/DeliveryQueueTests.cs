@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,8 +56,8 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         public async Task Enqueue_SetsUniqueMessageForSimultaniousDeliveries()
         {
             var queue = new DeliveryQueue();
-            var messages = Enumerable.Range(1, 16).Select(_ => new Message()).ToArray();
-            var enqueueTasks = messages
+            Message[] messages = Enumerable.Range(1, 16).Select(_ => new Message()).ToArray();
+            IEnumerable<Task> enqueueTasks = messages
                 .Select(message => Task.Run(() => queue.Enqueue(new Delivery(message))));
 
             await Task.WhenAll(enqueueTasks);
@@ -83,8 +84,8 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         {
             var message = new Message();
             message.InitializePrivateProperty("Delivery");
-            var link = Construct.Uninitialized<ListenerLink>();
-            var messageContext = Construct.ForPrivate<MessageContext>(link, message);
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            MessageContext messageContext = Construct.ForPrivate<MessageContext>(link, message);
             var queue = new DeliveryQueue();
 
             Should.NotThrow(() => queue.Process(messageContext));
@@ -95,8 +96,8 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         {
             var message = new Message();
             message.InitializePrivateProperty("Delivery");
-            var link = Construct.Uninitialized<ListenerLink>();
-            var messageContext = Construct.ForPrivate<MessageContext>(link, message);
+            ListenerLink link = Construct.Uninitialized<ListenerLink>();
+            MessageContext messageContext = Construct.ForPrivate<MessageContext>(link, message);
             var delivery = new Delivery(message);
             var queue = new DeliveryQueue();
             queue.Enqueue(delivery);

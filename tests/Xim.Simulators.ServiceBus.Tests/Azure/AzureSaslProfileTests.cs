@@ -22,10 +22,10 @@ namespace Xim.Simulators.ServiceBus.Azure
         [Test]
         public void UpgradeTransport_ReturnsTheSameTransportInstance()
         {
-            var transport = Substitute.For<ITransport>();
+            ITransport transport = Substitute.For<ITransport>();
             var profile = new AzureSaslProfileProxy();
 
-            var result = profile.CallUpgradeTransport(transport);
+            ITransport result = profile.CallUpgradeTransport(transport);
 
             result.ShouldBeSameAs(transport);
         }
@@ -36,7 +36,7 @@ namespace Xim.Simulators.ServiceBus.Azure
             var saslInit = default(SaslInit);
             var profile = new AzureSaslProfileProxy();
 
-            var command = profile.CallGetStartCommand("hostname1");
+            DescribedList command = profile.CallGetStartCommand("hostname1");
 
             command.ShouldSatisfyAllConditions(
                 () => saslInit = command.ShouldBeOfType<SaslInit>(),
@@ -51,7 +51,7 @@ namespace Xim.Simulators.ServiceBus.Azure
             var outcome = default(SaslOutcome);
             var profile = new AzureSaslProfileProxy();
 
-            var result = profile.CallOnCommand(new SaslInit());
+            DescribedList result = profile.CallOnCommand(new SaslInit());
 
             result.ShouldSatisfyAllConditions(
                 () => outcome = result.ShouldBeOfType<SaslOutcome>(),
@@ -64,7 +64,7 @@ namespace Xim.Simulators.ServiceBus.Azure
         {
             var profile = new AzureSaslProfileProxy();
 
-            var result = profile.CallOnCommand(new SaslMechanisms());
+            DescribedList result = profile.CallOnCommand(new SaslMechanisms());
 
             result.ShouldBeNull();
         }
@@ -75,7 +75,7 @@ namespace Xim.Simulators.ServiceBus.Azure
             var command = new SaslChallenge();
             var profile = new AzureSaslProfileProxy();
 
-            var exception = Should.Throw<AmqpException>(() => profile.CallOnCommand(command));
+            AmqpException exception = Should.Throw<AmqpException>(() => profile.CallOnCommand(command));
             exception.Error.Condition.ShouldBe((Symbol)ErrorCode.NotAllowed);
             exception.Message.ShouldBe(command.ToString());
         }

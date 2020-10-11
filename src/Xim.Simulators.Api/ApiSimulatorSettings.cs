@@ -49,6 +49,11 @@ namespace Xim.Simulators.Api
         /// </summary>
         public XmlWriterSettings XmlSettings { get; }
 
+        internal ApiSimulatorSettings()
+        {
+            JsonSettings = new JsonSerializerOptions { WriteIndented = true };
+        }
+
         internal ApiSimulatorSettings(ApiBuilder builder)
         {
             LoggerProvider = builder.LoggerProvider;

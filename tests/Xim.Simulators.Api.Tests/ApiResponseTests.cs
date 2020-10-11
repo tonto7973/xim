@@ -16,7 +16,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(409, null, "X-Operation: Revoke\r\nLocation: home", "{}")]
         public void Constructor_SetsRequiredProperties(int statusCode, string reasonPhrase, string httpHeaders, string data)
         {
-            var headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
+            Headers headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
             Body body = data == null ? null : Body.FromString(data);
 
             var apiResponse = new ApiResponse(statusCode, reasonPhrase, headers, body);
@@ -60,7 +60,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DisposesBody()
         {
-            var body = Substitute.ForPartsOf<Body>(new object(), "any");
+            Body body = Substitute.ForPartsOf<Body>(new object(), "any", null);
             var apiResponse = new ApiResponse(200, null, null, body);
 
             apiResponse.Dispose();
@@ -71,7 +71,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void Dispose_DisposesBodyOnlyOnce_WhenCalledMultipleTimes()
         {
-            var body = Substitute.ForPartsOf<Body>(new object(), "any");
+            Body body = Substitute.ForPartsOf<Body>(new object(), "any", null);
             var apiResponse = new ApiResponse(302, body: body);
 
 #pragma warning disable S3966 // Objects should not be disposed more than once - required for unit test
@@ -127,7 +127,7 @@ namespace Xim.Simulators.Api.Tests
             });
 
             await apiResponse.WriteAsync(context, settings);
-            var responseHeaders = context.Response.Headers;
+            IHeaderDictionary responseHeaders = context.Response.Headers;
 
             responseHeaders.ShouldSatisfyAllConditions(
                 () => responseHeaders.Count.ShouldBe(2),
@@ -142,7 +142,7 @@ namespace Xim.Simulators.Api.Tests
             var context = new DefaultHttpContext();
             var apiBuilder = new ApiBuilder(Substitute.For<ISimulation>());
             var settings = new ApiSimulatorSettings(apiBuilder);
-            var body = Substitute.ForPartsOf<TestBody>();
+            TestBody body = Substitute.ForPartsOf<TestBody>();
             var apiResponse = new ApiResponse(200, body: body);
 
             await apiResponse.WriteAsync(context, settings);
@@ -170,7 +170,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(null, "Text body")]
         public void OkWithHeaders_SetsProperApiResponse_WhenBodyIs(string httpHeaders, string httpBody)
         {
-            var headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
+            Headers headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
             Body body = httpBody == null ? null : Body.FromString(httpBody);
 
             var response = ApiResponse.Ok(headers, body);
@@ -202,7 +202,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("X-Data: tom")]
         public void OkTBody_SetsProperApiResponse_WhenHeaderIs(string httpHeaders)
         {
-            var headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
+            Headers headers = httpHeaders == null ? new Headers() : Headers.FromString(httpHeaders);
             var body = new { Id = 32 };
 
             var response = ApiResponse.Ok(headers, body);
@@ -274,7 +274,7 @@ namespace Xim.Simulators.Api.Tests
         public void Accepted_SetsProperApiResponse(string id)
         {
             var body = new { Blob = id };
-            var location = new Uri($"http://blobs.azure.com/blobs/{id}").MakeRelativeUri(new Uri($"http://blobs.azure.com/"));
+            Uri location = new Uri($"http://blobs.azure.com/blobs/{id}").MakeRelativeUri(new Uri($"http://blobs.azure.com/"));
 
             var expectedLocation = location.GetComponents(UriComponents.SerializationInfoString,
                                                           UriFormat.UriEscaped);
@@ -343,7 +343,7 @@ namespace Xim.Simulators.Api.Tests
         public void Unathorized_SetsProperApiResponse_WhenChallengeIs(string challenge)
         {
             Body body = challenge == null ? null : Body.FromString(challenge);
-            challenge = challenge ?? "bearer";
+            challenge ??= "bearer";
 
             var response = ApiResponse.Unauthorized(challenge, body);
 

@@ -135,6 +135,9 @@
   <data name="ApiHeaderValueIsInvalid" xml:space="preserve">
     <value>Header value "{0}" contains invalid character '{1}' at index {2}.</value>
   </data>
+  <data name="ApiRequestFormatNotSupported" xml:space="preserve">
+    <value>Unable to parse request; there is no registered media formatter for Content-Type: {0}</value>
+  </data>
   <data name="ApiResponseNotFormatted" xml:space="preserve">
     <value>Unable to format response; there is no registered media formatter</value>
   </data>

@@ -44,7 +44,7 @@ namespace Xim.Simulators.ServiceBus.Entities
 
             _deliveryQueue.Dispose();
 
-            foreach (var delivery in _deliveries)
+            foreach (Delivery delivery in _deliveries)
             {
                 delivery.Dispose();
             }

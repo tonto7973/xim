@@ -2,6 +2,7 @@
 using System.Threading;
 using NUnit.Framework;
 using Shouldly;
+using Xim.Simulators.ServiceBus.Delivering;
 
 namespace Xim.Simulators.ServiceBus.Entities.Tests
 {
@@ -41,7 +42,7 @@ namespace Xim.Simulators.ServiceBus.Entities.Tests
             var message = new Amqp.Message();
             var entity = new QueueEntity("s");
 
-            var delivery = entity.Post(message);
+            IDelivery delivery = entity.Post(message);
 
             entity.ShouldSatisfyAllConditions(
                 () => delivery.Message.ShouldBeSameAs(message),

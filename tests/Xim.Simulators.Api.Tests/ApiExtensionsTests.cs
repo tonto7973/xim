@@ -21,9 +21,9 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void AddApi_ReturnsApiBuilderInstance()
         {
-            var simulation = Substitute.For<ISimulation>();
+            ISimulation simulation = Substitute.For<ISimulation>();
 
-            var apiBuilder = simulation.AddApi();
+            ApiBuilder apiBuilder = simulation.AddApi();
 
             apiBuilder.ShouldNotBeNull();
         }
@@ -61,7 +61,7 @@ namespace Xim.Simulators.Api.Tests
 
             apiBuilder.AddHandler("GET /a", _ => new ApiResponse(302));
 
-            var response = await apiBuilder.Handlers["GET /a"](new DefaultHttpContext());
+            ApiResponse response = await apiBuilder.Handlers["GET /a"](new DefaultHttpContext());
 
             response.StatusCode.ShouldBe(302);
         }
@@ -99,7 +99,7 @@ namespace Xim.Simulators.Api.Tests
 
             apiBuilder.AddHandler("GET /z", new ApiResponse(303));
 
-            var response = await apiBuilder.Handlers["GET /z"](new DefaultHttpContext());
+            ApiResponse response = await apiBuilder.Handlers["GET /z"](new DefaultHttpContext());
 
             response.StatusCode.ShouldBe(303);
         }
@@ -140,7 +140,7 @@ namespace Xim.Simulators.Api.Tests
 
             apiBuilder.AddHandler<int>("TO /z/{id}", (value, _) => ApiResponse.Ok($"Value={value}"));
 
-            var response = await apiBuilder.Handlers["TO /z/{id}"](context);
+            ApiResponse response = await apiBuilder.Handlers["TO /z/{id}"](context);
 
             response.StatusCode.ShouldBe(200);
             ((Body<string>)response.Body).Content.ShouldBe("Value=784");
@@ -182,7 +182,7 @@ namespace Xim.Simulators.Api.Tests
 
             apiBuilder.AddHandler<(bool Open, int Id)>("FROM /gate/{open}/{id}", value => ApiResponse.Ok($"Value={value.Open}/{value.Id}"));
 
-            var response = await apiBuilder.Handlers["FROM /gate/{open}/{id}"](context);
+            ApiResponse response = await apiBuilder.Handlers["FROM /gate/{open}/{id}"](context);
 
             response.StatusCode.ShouldBe(200);
             ((Body<string>)response.Body).Content.ShouldBe("Value=True/3258");

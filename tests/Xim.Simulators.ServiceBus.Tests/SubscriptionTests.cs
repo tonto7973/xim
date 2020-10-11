@@ -24,7 +24,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [TestCase("01234657890123465789012346578901234657890123465789a")]
         public void Constructor_Throws_WhenNameInvalid(string invalidName)
         {
-            var exception = Should.Throw<ArgumentException>(() => new Subscription(invalidName));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Subscription(invalidName));
             exception.ParamName.ShouldBe("name");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotValid, RxValidName));
         }

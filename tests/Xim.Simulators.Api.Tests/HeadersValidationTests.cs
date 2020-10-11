@@ -16,7 +16,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("!#$%&'*+-.^_`|~")]
         public void NameContainsInvalidChar_ReturnsFalse_WhenNameValid(string validName)
         {
-            var result = HeadersValidation.NameContainsInvalidChar(validName, out var character);
+            var result = HeadersValidation.NameContainsInvalidChar(validName, out (char Char, int Index) character);
 
             result.ShouldSatisfyAllConditions(
                 () => result.ShouldBeFalse(),
@@ -29,7 +29,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase(">a", '>', 0)]
         public void NameContainsInvalidChar_ReturnsTrue_WhenNameInvalid(string invalidName, char c, int i)
         {
-            var result = HeadersValidation.NameContainsInvalidChar(invalidName, out var character);
+            var result = HeadersValidation.NameContainsInvalidChar(invalidName, out (char Char, int Index) character);
 
             result.ShouldSatisfyAllConditions(
                 () => result.ShouldBeTrue(),
@@ -42,7 +42,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("abc and \"def\"")]
         public void ValueContainsInvalidChar_ReturnsFalse_WhenValueValid(string validValue)
         {
-            var result = HeadersValidation.ValueContainsInvalidChar(validValue, out var character);
+            var result = HeadersValidation.ValueContainsInvalidChar(validValue, out (char Char, int Index) character);
 
             result.ShouldSatisfyAllConditions(
                 () => result.ShouldBeFalse(),
@@ -54,7 +54,7 @@ namespace Xim.Simulators.Api.Tests
         [TestCase("tom \x7f 32", '\x7f', 4, TestName = "ValueContainsInvalidChar_ReturnsTrue_WhenValueInvalid(Contains\\x7f)")]
         public void ValueContainsInvalidChar_ReturnsTrue_WhenValueInvalid(string invalidValue, char c, int i)
         {
-            var result = HeadersValidation.ValueContainsInvalidChar(invalidValue, out var character);
+            var result = HeadersValidation.ValueContainsInvalidChar(invalidValue, out (char Char, int Index) character);
 
             result.ShouldSatisfyAllConditions(
                 () => result.ShouldBeTrue(),

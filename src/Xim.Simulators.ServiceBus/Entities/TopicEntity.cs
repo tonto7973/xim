@@ -47,12 +47,12 @@ namespace Xim.Simulators.ServiceBus.Entities
                 return;
             _disposed = true;
 
-            foreach (var subscription in Subscriptions.Values)
+            foreach (IQueue subscription in Subscriptions.Values)
             {
                 ((QueueEntity)subscription).Dispose();
             }
 
-            foreach (var delivery in _deliveries)
+            foreach (TopicDelivery delivery in _deliveries)
             {
                 delivery.Dispose();
             }

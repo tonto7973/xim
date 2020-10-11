@@ -46,7 +46,7 @@ if not exist "%PACKAGES_DIR%" (
 )
 if not exist "%ROOT_DIR%\global.json" (
     set GLOBAL_JSON=global.json_a657b76d
-    dotnet new globaljson --sdk-version 3.0.100
+    dotnet new globaljson --sdk-version 3.1
     if %ERRORLEVEL% NEQ 0 goto QUIT
 )
 dotnet build-server shutdown

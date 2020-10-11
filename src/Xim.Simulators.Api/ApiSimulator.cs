@@ -24,7 +24,7 @@ namespace Xim.Simulators.Api
 
         public string Location => GetLocation();
 
-        public IReadOnlyCollection<ApiCall> ReceivedApiCalls => _apiCalls;
+        public IReadOnlyList<ApiCall> ReceivedApiCalls => _apiCalls;
 
         internal ApiSimulator(ApiBuilder builder)
         {

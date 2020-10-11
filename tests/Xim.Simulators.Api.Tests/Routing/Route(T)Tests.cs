@@ -135,7 +135,7 @@ namespace Xim.Simulators.Api.Routing.Tests
             ApiHandler<(TestColor Color, DateTime Date, bool Valid, TimeSpan Time)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
             var route = new Route<(TestColor, DateTime, bool, TimeSpan)>("GET /names/{color}/type/{date}/{valid}/-/{time}", handler, null);
 
-            var response = await route.Handler(context);
+            ApiResponse response = await route.Handler(context);
             var body = response.Body as Body<(TestColor Color, DateTime Date, bool Valid, TimeSpan Time)>;
 
             body.Content.Time.ShouldBe(TimeSpan.Parse("15:32:08", CultureInfo.InvariantCulture));
@@ -153,10 +153,10 @@ namespace Xim.Simulators.Api.Routing.Tests
             ApiHandler<(string Type, TestColor Color, DateTime Date)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
             var route = new Route<(string, TestColor, DateTime)>("PUT /animals/{type}/color/{color}/{date}", handler, null);
 
-            var response = await route.Handler(context);
+            ApiResponse response = await route.Handler(context);
 
             response.StatusCode.ShouldBe(400);
-            var error = ((Body<Error>)response.Body).Content;
+            Error error = ((Body<Error>)response.Body).Content;
             error.Title.ShouldBe("Failed to bind handler");
             error.Reasons.Count.ShouldBe(2);
             error.Reasons["{color}"].ShouldBe($"'Indigo' is not a valid value for {typeof(TestColor).Name}");
@@ -172,10 +172,10 @@ namespace Xim.Simulators.Api.Routing.Tests
             ApiHandler<(int Age, TestColor Color)> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
             var route = new Route<(int, TestColor)>("POST /animals/{age}/fur/{fur}", handler, null);
 
-            var response = await route.Handler(context);
+            ApiResponse response = await route.Handler(context);
 
             response.StatusCode.ShouldBe(400);
-            var error = ((Body<Error>)response.Body).Content;
+            Error error = ((Body<Error>)response.Body).Content;
             error.Title.ShouldBe("Failed to bind handler");
             error.Reasons.Count.ShouldBe(0);
         }
@@ -189,10 +189,10 @@ namespace Xim.Simulators.Api.Routing.Tests
             ApiHandler<int> handler = (value, _) => Task.FromResult(ApiResponse.Ok(value));
             var route = new Route<int>("GET /animals/{age}", handler, null);
 
-            var response = await route.Handler(context);
+            ApiResponse response = await route.Handler(context);
 
             response.StatusCode.ShouldBe(400);
-            var error = ((Body<Error>)response.Body).Content;
+            Error error = ((Body<Error>)response.Body).Content;
             error.Title.ShouldBe("Failed to bind handler");
             error.Reasons.Count.ShouldBe(0);
         }

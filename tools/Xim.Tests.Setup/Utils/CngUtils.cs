@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
-namespace Xim.Tests.Setup.Cng
+namespace Xim.Tests.Setup.Utils
 {
     internal static class CngUtils
     {
@@ -21,7 +21,7 @@ namespace Xim.Tests.Setup.Cng
         public static void AddAcl(string fileName, IdentityReference sid)
         {
             var file = new FileInfo(fileName);
-            var fs = file.GetAccessControl();
+            FileSecurity fs = file.GetAccessControl();
             fs.AddAccessRule(new FileSystemAccessRule(sid, FileSystemRights.Read, AccessControlType.Allow));
 
             file.SetAccessControl(fs);

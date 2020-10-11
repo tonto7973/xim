@@ -48,13 +48,13 @@ namespace Xim.Simulators.ServiceBus.Processing
         }
 
         public IEntity Find(string name)
-            => _entities.TryGetValue(name, out var entity)
+            => _entities.TryGetValue(name, out IEntity entity)
                 ? entity
                 : null;
 
         public IEnumerator<(string Address, IEntity Entity)> GetEnumerator()
         {
-            foreach (var item in _entities)
+            foreach (KeyValuePair<string, IEntity> item in _entities)
                 yield return (item.Key, item.Value);
         }
 

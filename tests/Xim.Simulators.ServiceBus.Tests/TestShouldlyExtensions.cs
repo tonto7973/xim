@@ -8,9 +8,9 @@ namespace Xim.Simulators.ServiceBus.Tests
     {
         public static async Task<OperationCanceledException> ShouldCancelOperationAsync(this Task task, TimeSpan? timeout = null)
         {
-            var finishIn = timeout ?? TimeSpan.FromSeconds(10);
+            TimeSpan finishIn = timeout ?? TimeSpan.FromSeconds(10);
             Task finishedTask = null;
-            var mainTask = task.ContinueWith(t => finishedTask = t);
+            Task<Task> mainTask = task.ContinueWith(t => finishedTask = t);
             var waitTask = Task.Delay(finishIn);
 
             await Task.WhenAny(mainTask, waitTask).ConfigureAwait(false);
@@ -20,7 +20,7 @@ namespace Xim.Simulators.ServiceBus.Tests
                 throw new ShouldAssertException($"Should complete in {finishIn} but did not");
             }
 
-            var operationCancelledException = await GetCanceledExceptionAsync(finishedTask).ConfigureAwait(false);
+            OperationCanceledException operationCancelledException = await GetCanceledExceptionAsync(finishedTask).ConfigureAwait(false);
 
             finishedTask.ShouldSatisfyAllConditions(
                 () => operationCancelledException.ShouldNotBeNull(),

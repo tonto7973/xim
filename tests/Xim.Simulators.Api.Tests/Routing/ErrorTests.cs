@@ -63,7 +63,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         {
             const string key = "{key}";
             var xml = $"<Error><Reason Name=\"{key}\">{reason}</Reason><Reason Name=\"old\">man</Reason><Title>{title}</Title></Error>";
-            var error = FromXml<Error>(xml, new XmlReaderSettings());
+            Error error = FromXml<Error>(xml, new XmlReaderSettings());
             error.Title.ShouldBe(title);
             error.Reasons.Count.ShouldBe(2);
             error.Reasons[key].ShouldBe(reason);
@@ -74,7 +74,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void DeserializesFromXml_IgnoresInvalidElement()
         {
             const string xml = "<Error><Why Name=\"buda\" /><Reason Name=\"old\" /><Title>X</Title></Error>";
-            var error = FromXml<Error>(xml, new XmlReaderSettings());
+            Error error = FromXml<Error>(xml, new XmlReaderSettings());
             error.Title.ShouldBe("X");
             error.Reasons.Count.ShouldBe(1);
             error.Reasons["old"].ShouldBeNull();
@@ -84,7 +84,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void DeserializesFromXml_ReadsEmptyReasonElementNameAttributeAsEmptyStringAndValueAsNull()
         {
             const string xml = "<Error><Reason /><Title>Abc</Title></Error>";
-            var error = FromXml<Error>(xml, new XmlReaderSettings());
+            Error error = FromXml<Error>(xml, new XmlReaderSettings());
             error.Title.ShouldBe("Abc");
             error.Reasons.Count.ShouldBe(1);
             error.Reasons[""].ShouldBeNull();
@@ -94,7 +94,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         public void DeserializesFromXml_ReadsEmptyReasonElementNameAttributeAsEmptyString()
         {
             const string xml = "<Error><Reason>No reason</Reason><Title>Abc</Title></Error>";
-            var error = FromXml<Error>(xml, new XmlReaderSettings());
+            Error error = FromXml<Error>(xml, new XmlReaderSettings());
             error.Title.ShouldBe("Abc");
             error.Reasons.Count.ShouldBe(1);
             error.Reasons[""].ShouldBe("No reason");
@@ -105,7 +105,7 @@ namespace Xim.Simulators.Api.Routing.Tests
         [TestCase("<Error />")]
         public void DeserializesFromEmptyXml(string xml)
         {
-            var error = FromXml<Error>(xml, new XmlReaderSettings());
+            Error error = FromXml<Error>(xml, new XmlReaderSettings());
             error.Title.ShouldBe(null);
             error.Reasons.ShouldNotBeNull();
         }
@@ -135,24 +135,20 @@ namespace Xim.Simulators.Api.Routing.Tests
         private static string ToXml<T>(T value, XmlWriterSettings xmlSettings)
         {
             var xmlSerializer = new XmlSerializer(typeof(T));
-            using (var sr = new StringWriter())
-            using (var xmlWriter = XmlWriter.Create(sr, xmlSettings))
-            {
-                var namespaces = new XmlSerializerNamespaces();
-                namespaces.Add(string.Empty, string.Empty);
-                xmlSerializer.Serialize(xmlWriter, value, namespaces);
-                return sr.ToString();
-            }
+            using var sr = new StringWriter();
+            using var xmlWriter = XmlWriter.Create(sr, xmlSettings);
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add(string.Empty, string.Empty);
+            xmlSerializer.Serialize(xmlWriter, value, namespaces);
+            return sr.ToString();
         }
 
         private static T FromXml<T>(string value, XmlReaderSettings xmlSettings)
         {
             var xmlSerializer = new XmlSerializer(typeof(T));
-            using (var sr = new StringReader(value))
-            using (var xmlReader = XmlReader.Create(sr, xmlSettings))
-            {
-                return (T)xmlSerializer.Deserialize(xmlReader);
-            }
+            using var sr = new StringReader(value);
+            using var xmlReader = XmlReader.Create(sr, xmlSettings);
+            return (T)xmlSerializer.Deserialize(xmlReader);
         }
     }
 }

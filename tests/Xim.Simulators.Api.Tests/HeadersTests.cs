@@ -292,13 +292,13 @@ namespace Xim.Simulators.Api.Tests
             };
 
             var data1 = new List<KeyValuePair<string, string>>();
-            var enum1 = headers.GetEnumerator();
+            IEnumerator<KeyValuePair<string, string>> enum1 = headers.GetEnumerator();
             while (enum1.MoveNext())
             {
                 data1.Add(enum1.Current);
             }
 
-            var enum2 = ((IEnumerable)headers).GetEnumerator();
+            IEnumerator enum2 = ((IEnumerable)headers).GetEnumerator();
             var data2 = new List<KeyValuePair<string, string>>();
             while (enum2.MoveNext())
             {
@@ -336,7 +336,7 @@ namespace Xim.Simulators.Api.Tests
         [Test]
         public void FromString_ParsesMultipleHeadersSeparatedByNewline()
         {
-            var expectedHeaders = new[] {
+            KeyValuePair<string, string>[] expectedHeaders = new[] {
                 new KeyValuePair<string, string>("Location", "Home"),
                 new KeyValuePair<string, string>("X-Operation", "lock,check"),
                 new KeyValuePair<string, string>("ETag", "A634B")

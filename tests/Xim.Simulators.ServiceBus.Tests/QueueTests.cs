@@ -23,7 +23,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         [TestCase("a*bc")]
         public void Contructor_Throws_WhenNameInvalid(string invalidName)
         {
-            var exception = Should.Throw<ArgumentException>(() => new Queue(invalidName));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Queue(invalidName));
             exception.ParamName.ShouldBe("name");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotValid, RxValidName));
         }
@@ -33,7 +33,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         {
             var invalidName = new string('x', 261);
 
-            var exception = Should.Throw<ArgumentException>(() => new Queue(invalidName));
+            ArgumentException exception = Should.Throw<ArgumentException>(() => new Queue(invalidName));
             exception.ParamName.ShouldBe("name");
             exception.Message.ShouldStartWith(SR.Format(SR.SbEntityNameNotValid, RxValidName));
         }

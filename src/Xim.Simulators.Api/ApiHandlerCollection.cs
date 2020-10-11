@@ -49,7 +49,7 @@ namespace Xim.Simulators.Api
         /// <returns>An enumerator that can be used to iterate through the <see cref="ApiHandlerCollection"/>.</returns>
         public IEnumerator<ApiHandler> GetEnumerator()
         {
-            foreach (var item in _handlers.Values)
+            foreach (Route item in _handlers.Values)
                 yield return item.Handler;
         }
 
@@ -67,7 +67,7 @@ namespace Xim.Simulators.Api
                 throw new ArgumentNullException(nameof(handler));
             lock (_handlersLock)
             {
-                _handlers.TryGetValue(action, out var previous);
+                _handlers.TryGetValue(action, out Route previous);
                 var route = new Route(
                     action,
                     handler,
@@ -85,7 +85,7 @@ namespace Xim.Simulators.Api
                 throw new ArgumentNullException(nameof(handler));
             lock (_handlersLock)
             {
-                _handlers.TryGetValue(action, out var previous);
+                _handlers.TryGetValue(action, out Route previous);
                 var route = new Route<T>(
                     action,
                     handler,
@@ -102,8 +102,8 @@ namespace Xim.Simulators.Api
 
             lock (_handlersLock)
             {
-                var route = GetRoute(action);
-                var notInvoked = route?
+                Route route = GetRoute(action);
+                Route notInvoked = route?
                     .AsEnumerable()
                     .LastOrDefault(r => !r.Invoked);
 

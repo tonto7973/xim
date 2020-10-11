@@ -2,6 +2,8 @@
 using Amqp.Framing;
 using Amqp.Listener;
 using Microsoft.Extensions.Logging;
+using Xim.Simulators.ServiceBus.Delivering;
+using Xim.Simulators.ServiceBus.Entities;
 using Xim.Simulators.ServiceBus.Processing.Endpoints;
 
 namespace Xim.Simulators.ServiceBus.Processing
@@ -43,7 +45,7 @@ namespace Xim.Simulators.ServiceBus.Processing
 
         private void AttachIncomingLink(AttachContext attachContext, Target target)
         {
-            var entity = _entityLookup.Find(target.Address);
+            IEntity entity = _entityLookup.Find(target.Address);
             if (entity == null)
             {
                 attachContext.Complete(new Error(ErrorCode.NotFound) { Description = "Entity not found." });
@@ -58,7 +60,7 @@ namespace Xim.Simulators.ServiceBus.Processing
 
         private void AttachOutgoingLink(AttachContext attachContext, Source source)
         {
-            var entity = _entityLookup.Find(source.Address);
+            IEntity entity = _entityLookup.Find(source.Address);
             if (entity == null)
             {
                 attachContext.Complete(new Error(ErrorCode.NotFound) { Description = "Entity not found." });
@@ -66,7 +68,7 @@ namespace Xim.Simulators.ServiceBus.Processing
                 return;
             }
 
-            var queue = entity.DeliveryQueue;
+            DeliveryQueue queue = entity.DeliveryQueue;
             if (queue == null)
             {
                 attachContext.Complete(new Error(ErrorCode.NotFound) { Description = "Queue not found." });

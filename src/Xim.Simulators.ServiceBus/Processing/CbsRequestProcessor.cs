@@ -26,14 +26,14 @@ namespace Xim.Simulators.ServiceBus.Processing
             if (ValidateCbsRequest(requestContext))
             {
                 _messageContext.Authorize(requestContext.Link.Session.Connection);
-                using (var message = GetResponseMessage(200, requestContext))
+                using (Message message = GetResponseMessage(200, requestContext))
                 {
                     requestContext.Complete(message);
                 }
             }
             else
             {
-                using (var message = GetResponseMessage(401, requestContext))
+                using (Message message = GetResponseMessage(401, requestContext))
                 {
                     requestContext.Complete(message);
                 }
@@ -58,7 +58,7 @@ namespace Xim.Simulators.ServiceBus.Processing
             }
         }
 
-        private Message GetResponseMessage(int responseCode, RequestContext requestContext)
+        private static Message GetResponseMessage(int responseCode, RequestContext requestContext)
             => new Message
             {
                 Properties = new Properties

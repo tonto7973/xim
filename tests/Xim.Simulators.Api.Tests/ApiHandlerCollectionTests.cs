@@ -137,7 +137,7 @@ namespace Xim.Simulators.Api.Tests
 
             var enumerable = (IEnumerable)apiHandlers;
 
-            var actions = enumerable.OfType<ApiHandler>()
+            ApiHandler[] actions = enumerable.OfType<ApiHandler>()
                 .ToArray();
 
             actions.ShouldBe(new[] { handler, handler, handler });
@@ -152,7 +152,7 @@ namespace Xim.Simulators.Api.Tests
 
             Action action = () => apiHandlers.Set(invalidAction, _ => null);
 
-            var exception = action.ShouldThrow<ArgumentException>();
+            ArgumentException exception = action.ShouldThrow<ArgumentException>();
             exception.ParamName.ShouldBe("action");
             exception.Message.ShouldStartWith(SR.Format(SR.ApiRouteInvalidAction, invalidAction));
         }
@@ -263,10 +263,10 @@ namespace Xim.Simulators.Api.Tests
             apiHandlers.Set("GET /x/32", _ => Task.FromResult(secondResponse));
             apiHandlers.Set("GET /x/32", _ => Task.FromResult(thirdResponse));
 
-            var first = apiHandlers.Next("GET /x/32");
-            var second = apiHandlers.Next("GET /x/32");
-            var third = apiHandlers.Next("GET /x/32");
-            var fourth = apiHandlers.Next("GET /x/32");
+            ApiHandler first = apiHandlers.Next("GET /x/32");
+            ApiHandler second = apiHandlers.Next("GET /x/32");
+            ApiHandler third = apiHandlers.Next("GET /x/32");
+            ApiHandler fourth = apiHandlers.Next("GET /x/32");
 
             apiHandlers.ShouldSatisfyAllConditions(
                 () => first(null).Result.ShouldBeSameAs(firstResponse),

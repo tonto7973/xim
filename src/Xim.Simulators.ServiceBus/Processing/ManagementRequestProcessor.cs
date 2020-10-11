@@ -21,7 +21,7 @@ namespace Xim.Simulators.ServiceBus.Processing
 
         public void Process(RequestContext requestContext)
         {
-            var request = requestContext.Message;
+            Message request = requestContext.Message;
             var operation = request.ApplicationProperties?.Map["operation"] as string;
             Map messageBody = null;
             switch (operation)

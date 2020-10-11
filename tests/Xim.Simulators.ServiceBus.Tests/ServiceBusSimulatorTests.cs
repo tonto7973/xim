@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
 using Shouldly;
+using Xim.Tests.Setup;
 
 namespace Xim.Simulators.ServiceBus.Tests
 {
@@ -17,7 +18,7 @@ namespace Xim.Simulators.ServiceBus.Tests
         {
             const int port = 8794;
             var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>());
-            var loggerProvider = Substitute.For<ILoggerProvider>();
+            ILoggerProvider loggerProvider = Substitute.For<ILoggerProvider>();
             var certificate = new X509Certificate2();
             serviceBusBuilder.SetLoggerProvider(loggerProvider);
             serviceBusBuilder.SetCertificate(certificate);
@@ -94,10 +95,10 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void Dispose_DisposesTopics()
         {
-            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
+            ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
                 .AddTopic("myTopic");
             var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
-            var topic = serviceBusSimulator.Topics["myTopic"];
+            Entities.ITopic topic = serviceBusSimulator.Topics["myTopic"];
 
             serviceBusSimulator.Dispose();
 
@@ -107,10 +108,10 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public void Dispose_DisposesQueues()
         {
-            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
+            ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
                 .AddQueue("myQueue");
             var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
-            var queue = serviceBusSimulator.Queues["myQueue"];
+            Entities.IQueue queue = serviceBusSimulator.Queues["myQueue"];
 
             serviceBusSimulator.Dispose();
 
@@ -203,21 +204,19 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public async Task StartAsync_ReportsActiveLocation_WhenSecured()
         {
-            using (var certificate = TestCertificate.Create())
-            {
-                var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
-                    .SetCertificate(certificate);
-                var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
+            using X509Certificate2 certificate = TestCertificate.Find();
+            ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
+                .SetCertificate(certificate);
+            var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
 
-                await serviceBusSimulator.StartAsync();
-                try
-                {
-                    serviceBusSimulator.Location.ShouldStartWith($"amqps://127.0.0.1:{serviceBusSimulator.Port}");
-                }
-                finally
-                {
-                    await serviceBusSimulator.StopAsync();
-                }
+            await serviceBusSimulator.StartAsync();
+            try
+            {
+                serviceBusSimulator.Location.ShouldStartWith($"amqps://127.0.0.1:{serviceBusSimulator.Port}");
+            }
+            finally
+            {
+                await serviceBusSimulator.StopAsync();
             }
         }
 
@@ -278,21 +277,19 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public async Task StartAsync_UsesDefaultSecurePort_WhenSecured()
         {
-            using (var certificate = TestCertificate.Create())
-            {
-                var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
-                    .SetCertificate(certificate);
-                var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
+            using X509Certificate2 certificate = TestCertificate.Find();
+            ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>())
+                .SetCertificate(certificate);
+            var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
 
-                await serviceBusSimulator.StartAsync();
-                try
-                {
-                    serviceBusSimulator.Port.ShouldBe(5671);
-                }
-                finally
-                {
-                    await serviceBusSimulator.StopAsync();
-                }
+            await serviceBusSimulator.StartAsync();
+            try
+            {
+                serviceBusSimulator.Port.ShouldBe(5671);
+            }
+            finally
+            {
+                await serviceBusSimulator.StopAsync();
             }
         }
 
@@ -302,7 +299,7 @@ namespace Xim.Simulators.ServiceBus.Tests
             var availablePort = TestTcpUtils.FindFreePort();
             using (TestTcpUtils.BlockAllLocalPorts(availablePort))
             {
-                var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>()).SetPort(availablePort);
+                ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>()).SetPort(availablePort);
                 var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
 
                 Func<Task> action = async () => await serviceBusSimulator.StartAsync();
@@ -321,13 +318,14 @@ namespace Xim.Simulators.ServiceBus.Tests
         [Test]
         public async Task StartAsync_Throws_WhenPortInvalid()
         {
-            var serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>()).SetPort(ushort.MaxValue + 10);
+            ServiceBusBuilder serviceBusBuilder = new ServiceBusBuilder(Substitute.For<ISimulation>()).SetPort(ushort.MaxValue + 10);
             var serviceBusSimulator = new ServiceBusSimulator(serviceBusBuilder);
 
             Func<Task> action = async () => await serviceBusSimulator.StartAsync();
             try
             {
-                await action.ShouldThrowAsync<UriFormatException>();
+                (await action.ShouldThrowAsync<ArgumentOutOfRangeException>())
+                    .ParamName.ShouldBe("port");
                 serviceBusSimulator.State.ShouldBe(SimulatorState.Stopped);
             }
             finally

@@ -3,6 +3,7 @@ using Amqp.Listener;
 using Amqp.Types;
 using Microsoft.Extensions.Logging;
 using Xim.Simulators.ServiceBus.Azure;
+using Xim.Simulators.ServiceBus.Entities;
 using Xim.Simulators.ServiceBus.Processing;
 
 namespace Xim.Simulators.ServiceBus
@@ -30,7 +31,7 @@ namespace Xim.Simulators.ServiceBus
 
         internal static void RegisterManagementProcessors(this IContainerHost host, IEntityLookup entityLookup, ILoggerProvider loggerProvider)
         {
-            foreach (var item in entityLookup)
+            foreach ((string Address, IEntity Entity) item in entityLookup)
             {
                 if (item.Entity.DeliveryQueue != null)
                 {

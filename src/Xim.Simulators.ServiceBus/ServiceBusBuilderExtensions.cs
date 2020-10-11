@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace Xim.Simulators.ServiceBus
 {
@@ -27,10 +28,14 @@ namespace Xim.Simulators.ServiceBus
         /// <exception cref="System.ArgumentException">If <paramref name="topicName"/> or <paramref name="subscriptions"/> are invalid.</exception>
         public static ServiceBusBuilder AddTopic(this ServiceBusBuilder serviceBusBuilder,
             string topicName, params string[] subscriptions)
-            => serviceBusBuilder.AddTopic(new Topic(
-                    topicName,
-                    subscriptions?.Select(name => new Subscription(name)).ToArray()
-               ));
+        {
+            if (serviceBusBuilder == null)
+                throw new ArgumentNullException(nameof(serviceBusBuilder));
+            return serviceBusBuilder.AddTopic(new Topic(
+                               topicName,
+                               subscriptions?.Select(name => new Subscription(name)).ToArray()
+                          ));
+        }
 
         /// <summary>
         /// Adds a queue to the service bus builder.
@@ -40,6 +45,10 @@ namespace Xim.Simulators.ServiceBus
         /// <returns>The <see cref="ServiceBusBuilder"/>.</returns>
         public static ServiceBusBuilder AddQueue(this ServiceBusBuilder serviceBusBuilder,
             string queueName)
-            => serviceBusBuilder.AddQueue(new Queue(queueName));
+        {
+            if (serviceBusBuilder == null)
+                throw new ArgumentNullException(nameof(serviceBusBuilder));
+            return serviceBusBuilder.AddQueue(new Queue(queueName));
+        }
     }
 }

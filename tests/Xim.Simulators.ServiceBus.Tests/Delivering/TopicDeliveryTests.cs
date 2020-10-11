@@ -23,7 +23,7 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         public void Constructor_InitializesInstance()
         {
             var message = new Amqp.Message();
-            var subscriptions = Enumerable.Empty<IDelivery>().ToArray();
+            IDelivery[] subscriptions = Enumerable.Empty<IDelivery>().ToArray();
             var delivery = new TopicDelivery(message, subscriptions);
 
             delivery.ShouldSatisfyAllConditions(
@@ -50,11 +50,11 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         public async Task Wait_ReturnsTrue_WhenAllSubscriptionWaitsReturnTrueWithinTimeout()
         {
             var message = new Amqp.Message();
-            var subscriptions = Enumerable
+            IDelivery[] subscriptions = Enumerable
                 .Range(0, 3)
                 .Select(_ =>
                 {
-                    var subscription = Substitute.For<IDelivery>();
+                    IDelivery subscription = Substitute.For<IDelivery>();
                     subscription.WaitAsync(Arg.Any<TimeSpan>()).Returns(true);
                     return subscription;
                 })
@@ -70,11 +70,11 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         public async Task Wait_ReturnsFalse_WhenAnySubscriptionWaitsReturnFalseWithinTimeout()
         {
             var message = new Amqp.Message();
-            var subscriptions = Enumerable
+            IDelivery[] subscriptions = Enumerable
                 .Range(0, 3)
                 .Select((_, index) =>
                 {
-                    var subscription = Substitute.For<IDelivery>();
+                    IDelivery subscription = Substitute.For<IDelivery>();
                     subscription.WaitAsync(Arg.Any<TimeSpan>()).Returns(index != 1);
                     return subscription;
                 })
@@ -90,17 +90,17 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         public async Task Wait_Cancels_WhenAnySubscriptionWaitsCancels()
         {
             var message = new Amqp.Message();
-            var subscriptions = Enumerable
+            IDelivery[] subscriptions = Enumerable
                 .Range(0, 3)
                 .Select((_, index) =>
                 {
-                    var subscription = Substitute.For<IDelivery>();
+                    IDelivery subscription = Substitute.For<IDelivery>();
                     subscription
                         .WaitAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
                         .Returns(async call =>
                         {
-                            var delay = index != 1 ? call.ArgAt<TimeSpan>(0) : TimeSpan.FromSeconds(15);
-                            var cancellationToken = call.ArgAt<CancellationToken>(1);
+                            TimeSpan delay = index != 1 ? call.ArgAt<TimeSpan>(0) : TimeSpan.FromSeconds(15);
+                            CancellationToken cancellationToken = call.ArgAt<CancellationToken>(1);
                             await Task.Delay(delay.Add(TimeSpan.FromMilliseconds(1)), cancellationToken);
                             cancellationToken.ThrowIfCancellationRequested();
                             return true;
@@ -110,7 +110,7 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
                 .ToArray();
             var delivery = new TopicDelivery(message, subscriptions);
             var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(10));
-            var task = delivery.WaitAsync(TimeSpan.FromMilliseconds(1), cts.Token);
+            Task<bool> task = delivery.WaitAsync(TimeSpan.FromMilliseconds(1), cts.Token);
 
             await task.ShouldCancelOperationAsync();
         }
@@ -128,7 +128,7 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         [Test]
         public void Dispose_DisposesSubscriptions()
         {
-            var subscription = Substitute.For<IDisposable, IDelivery>();
+            IDisposable subscription = Substitute.For<IDisposable, IDelivery>();
             var delivery = new TopicDelivery(new Amqp.Message(), new List<IDelivery> { (IDelivery)subscription });
 
             delivery.Dispose();
@@ -139,7 +139,7 @@ namespace Xim.Simulators.ServiceBus.Delivering.Tests
         [Test]
         public void Dispose_DoesNotThrow_WhenSubscriptionNotDisposable()
         {
-            var subscription = Substitute.For<IDelivery>();
+            IDelivery subscription = Substitute.For<IDelivery>();
             var delivery = new TopicDelivery(new Amqp.Message(), new List<IDelivery> { subscription });
 
             Should.NotThrow(() => delivery.Dispose());
