@@ -135,24 +135,20 @@ namespace Xim.Simulators.Api.Routing.Tests
         private static string ToXml<T>(T value, XmlWriterSettings xmlSettings)
         {
             var xmlSerializer = new XmlSerializer(typeof(T));
-            using (var sr = new StringWriter())
-            using (var xmlWriter = XmlWriter.Create(sr, xmlSettings))
-            {
-                var namespaces = new XmlSerializerNamespaces();
-                namespaces.Add(string.Empty, string.Empty);
-                xmlSerializer.Serialize(xmlWriter, value, namespaces);
-                return sr.ToString();
-            }
+            using var sr = new StringWriter();
+            using var xmlWriter = XmlWriter.Create(sr, xmlSettings);
+            var namespaces = new XmlSerializerNamespaces();
+            namespaces.Add(string.Empty, string.Empty);
+            xmlSerializer.Serialize(xmlWriter, value, namespaces);
+            return sr.ToString();
         }
 
         private static T FromXml<T>(string value, XmlReaderSettings xmlSettings)
         {
             var xmlSerializer = new XmlSerializer(typeof(T));
-            using (var sr = new StringReader(value))
-            using (var xmlReader = XmlReader.Create(sr, xmlSettings))
-            {
-                return (T)xmlSerializer.Deserialize(xmlReader);
-            }
+            using var sr = new StringReader(value);
+            using var xmlReader = XmlReader.Create(sr, xmlSettings);
+            return (T)xmlSerializer.Deserialize(xmlReader);
         }
     }
 }

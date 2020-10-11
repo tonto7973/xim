@@ -343,7 +343,7 @@ namespace Xim.Simulators.Api.Tests
         public void Unathorized_SetsProperApiResponse_WhenChallengeIs(string challenge)
         {
             Body body = challenge == null ? null : Body.FromString(challenge);
-            challenge = challenge ?? "bearer";
+            challenge ??= "bearer";
 
             var response = ApiResponse.Unauthorized(challenge, body);
 
